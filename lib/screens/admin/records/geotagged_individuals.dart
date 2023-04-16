@@ -80,7 +80,9 @@ class _GeoTaggedIndividualsState extends State<GeoTaggedIndividuals> {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(geotagged['name'] ?? "Anonymous"),
+                                Text(geotagged['name'] ?? "Anonymous",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
                                 Text(geotagged['gender'] ?? "")
                               ]),
                           Expanded(child: Container()),
@@ -108,7 +110,8 @@ class _GeoTaggedIndividualsState extends State<GeoTaggedIndividuals> {
                               ]),
                           Button(
                             label: "Edit",
-                            textColor: ACCENT_COLOR,
+                            textColor: Colors.black,
+                            borderColor: Colors.black,
                             backgroundColor: Colors.transparent,
                             padding: const EdgeInsets.symmetric(
                                 vertical: 3, horizontal: 10),

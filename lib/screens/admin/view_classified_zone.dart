@@ -53,7 +53,9 @@ class _ViewClassifiedZoneState extends State<ViewClassifiedZone> {
               pinnedLocations.add(LatLng(e['latitude'], e['longitude']));
             });
 
-            setPolygon(null, pinnedLocations);
+            if (pinnedLocations.isNotEmpty) {
+              setPolygon(null, pinnedLocations);
+            }
           });
     });
     super.initState();
@@ -120,7 +122,7 @@ class _ViewClassifiedZoneState extends State<ViewClassifiedZone> {
                 getValue()?['alert_message'],
                 style: const TextStyle(fontSize: 17),
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 100),
             ]));
   }
 }

@@ -15,10 +15,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class GeoTagForm extends StatefulWidget {
+  String? uniqueId;
   String? dataKey;
   String? diseaseKey;
   String mode;
-  GeoTagForm({Key? key, this.dataKey, this.diseaseKey, required this.mode})
+  GeoTagForm(
+      {Key? key,
+      this.uniqueId,
+      this.dataKey,
+      this.diseaseKey,
+      required this.mode})
       : super(key: key);
 
   @override
@@ -30,7 +36,7 @@ class _GeoTagFormState extends State<GeoTagForm> {
   bool isUploadingImage = false;
 
   Map payload = {
-    "id": "",
+    "deviceId": "",
     "imageUrl": null,
     "name": "",
     "gender": "Male",
@@ -81,6 +87,7 @@ class _GeoTagFormState extends State<GeoTagForm> {
         }
       } else {
         getLocation();
+        payload['deviceId'] = widget.uniqueId;
       }
     });
     super.initState();
@@ -138,42 +145,47 @@ class _GeoTagFormState extends State<GeoTagForm> {
                       const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                   child: Form(
                       child: Column(children: [
-                    const SizedBox(height: 30),
-                    Column(children: [
-                      if (locationProvider.loading == "current_location")
-                        IconText(isLoading: true, label: "Getting location"),
-                      if (locationProvider.loading == "current_location_failed")
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconText(
-                                  isLoading: true,
-                                  label: "Failed to detect location"),
-                              Button(
-                                  label: "Edit",
-                                  textColor: ACCENT_COLOR,
-                                  backgroundColor: Colors.transparent,
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 3, horizontal: 10),
-                                  onPress: () => getLocation())
-                            ]),
-                      if (payload['detected_latitude'] != null &&
-                          payload['detected_longitude'] != null)
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconText(
-                                  icon: Icons.location_history_rounded,
-                                  label: "Location detected"),
-                              Button(
-                                  label: "Edit",
-                                  textColor: ACCENT_COLOR,
-                                  backgroundColor: Colors.transparent,
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 3, horizontal: 10),
-                                  onPress: () => getLocation())
-                            ])
-                    ]),
+                    if (widget.mode == "ADD")
+                      Column(children: [
+                        const SizedBox(height: 30),
+                        if (locationProvider.loading == "current_location")
+                          IconText(isLoading: true, label: "Getting location"),
+                        if (locationProvider.loading ==
+                            "current_location_failed")
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconText(
+                                    isLoading: true,
+                                    label: "Failed to detect location"),
+                                Button(
+                                    label: "Retry",
+                                    textColor: ACCENT_COLOR,
+                                    backgroundColor: Colors.transparent,
+                                    fontSize: 10,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 3, horizontal: 10),
+                                    onPress: () => getLocation())
+                              ]),
+                        if ((payload['detected_latitude'] != null &&
+                            payload['detected_longitude'] != null))
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconText(
+                                    color: Colors.green,
+                                    icon: Icons.location_history_rounded,
+                                    label: "Location detected"),
+                                Button(
+                                    label: "Update Location",
+                                    textColor: ACCENT_COLOR,
+                                    backgroundColor: Colors.transparent,
+                                    fontSize: 10,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 3, horizontal: 10),
+                                    onPress: () => getLocation())
+                              ])
+                      ]),
                     const SizedBox(height: 40),
                     SingleImagePicker(
                         urlValue: payload['imageUrl'],
@@ -202,7 +214,6 @@ class _GeoTagFormState extends State<GeoTagForm> {
                             return "Field required";
                           }
                         },
-                        keyboardType: TextInputType.number,
                         onChanged: (val) =>
                             setState(() => payload['name'] = val),
                         decoration: textFieldStyle(label: "Full Name")),
@@ -214,7 +225,6 @@ class _GeoTagFormState extends State<GeoTagForm> {
                             return "Field required";
                           }
                         },
-                        keyboardType: TextInputType.number,
                         onChanged: (val) =>
                             setState(() => payload['purok'] = val),
                         decoration: textFieldStyle(label: "Purok")),
@@ -226,7 +236,6 @@ class _GeoTagFormState extends State<GeoTagForm> {
                             return "Field required";
                           }
                         },
-                        keyboardType: TextInputType.number,
                         onChanged: (val) =>
                             setState(() => payload['barangay'] = val),
                         decoration: textFieldStyle(label: "Barangay")),
@@ -285,45 +294,42 @@ class _GeoTagFormState extends State<GeoTagForm> {
                         onChanged: (value) => setState(() {
                               payload['status'] = value;
                             })),
+                    const SizedBox(height: 40),
+                    Button(
+                        isLoading: ["add_geotag", "geotag_edit"]
+                                .contains(diseasesProvider.loading) ||
+                            isUploadingImage,
+                        label: widget.mode == "EDIT"
+                            ? "Save Changes"
+                            : "Add Geotag",
+                        onPress: () async {
+                          if (selectedImage == null) {
+                            onSaveData();
+                            return;
+                          }
+
+                          setState(() {
+                            isUploadingImage = true;
+                          });
+
+                          String? imageLink = await uploadFile(selectedImage);
+                          if (imageLink != null) {
+                            payload['imageUrl'] = imageLink;
+                            onSaveData();
+                          } else {
+                            setState(() {
+                              isUploadingImage = false;
+                            });
+                            if (!mounted) return;
+                            launchSnackbar(
+                                context: context,
+                                mode: "ERROR",
+                                message: "Failed to upload the image.");
+                          }
+                        }),
+                    const SizedBox(height: 30),
                   ])),
                 )),
-                Container(
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                      border: Border(
-                          top: BorderSide(color: Colors.grey.withOpacity(.4)))),
-                  child: Button(
-                      isLoading: ["add_geotag", "geotag_edit"]
-                              .contains(diseasesProvider.loading) ||
-                          isUploadingImage,
-                      label:
-                          widget.mode == "EDIT" ? "Save Changes" : "Add Geotag",
-                      onPress: () async {
-                        if (selectedImage == null) {
-                          onSaveData();
-                          return;
-                        }
-
-                        setState(() {
-                          isUploadingImage = true;
-                        });
-
-                        String? imageLink = await uploadFile(selectedImage);
-                        if (imageLink != null) {
-                          payload['imageUrl'] = imageLink;
-                          onSaveData();
-                        } else {
-                          setState(() {
-                            isUploadingImage = false;
-                          });
-                          if (!mounted) return;
-                          launchSnackbar(
-                              context: context,
-                              mode: "ERROR",
-                              message: "Failed to upload the image.");
-                        }
-                      }),
-                )
               ]));
   }
 }

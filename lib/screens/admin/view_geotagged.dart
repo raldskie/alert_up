@@ -21,16 +21,17 @@ class _ViewGeotaggedState extends State<ViewGeotagged> {
   late GoogleMapController controller;
   Set<Marker> markers = {};
   LatLng? position;
+  LatLng? originalPosition;
 
-  setMarker(LatLng pos) async {
+  setMarker(LatLng pos, double pinPreset) async {
     controller.animateCamera(
         CameraUpdate.newCameraPosition(CameraPosition(target: pos, zoom: 17)));
 
     MarkerId markerId = MarkerId(DateTime.now().toString());
     Marker destinationMarker = Marker(
-      markerId: markerId,
-      position: pos,
-    );
+        markerId: markerId,
+        position: pos,
+        icon: BitmapDescriptor.defaultMarkerWithHue(pinPreset));
     setState(() {
       markers.add(destinationMarker);
     });
@@ -57,6 +58,15 @@ class _ViewGeotaggedState extends State<ViewGeotagged> {
                 double.tryParse(geotag['last_latitude'].toString());
             double? longitude =
                 double.tryParse(geotag['last_longitude'].toString());
+
+            double? detected_latitude =
+                double.tryParse(geotag['detected_latitude'].toString());
+            double? detected_longitude =
+                double.tryParse(geotag['detected_longitude'].toString());
+
+            if (detected_latitude != null && detected_longitude != null) {
+              originalPosition = LatLng(detected_latitude, detected_longitude);
+            }
 
             if (latitude != null && longitude != null) {
               position = LatLng(latitude, longitude);
@@ -94,11 +104,37 @@ class _ViewGeotaggedState extends State<ViewGeotagged> {
                       this.controller = controller;
                       if (position != null) {
                         controller.animateCamera(CameraUpdate.newCameraPosition(
-                            CameraPosition(target: position!, zoom: 17)));
-                        setMarker(position!);
+                            CameraPosition(target: position!, zoom: 12)));
+                        setMarker(position!, BitmapDescriptor.hueGreen);
+                      }
+                      if (originalPosition != null) {
+                        setMarker(originalPosition!, BitmapDescriptor.hueRed);
                       }
                     },
                   )),
+              const SizedBox(height: 10),
+              Row(children: [
+                Container(
+                    height: 15,
+                    width: 15,
+                    decoration: BoxDecoration(
+                        color: Colors.greenAccent,
+                        borderRadius: BorderRadius.circular(10))),
+                const SizedBox(width: 10),
+                const Text("Last Location",
+                    style: TextStyle(color: Colors.grey, fontSize: 12)),
+                const SizedBox(width: 30),
+                Container(
+                    height: 15,
+                    width: 15,
+                    decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10))),
+                const SizedBox(width: 10),
+                const Text("Geotagged Location",
+                    style: TextStyle(color: Colors.grey, fontSize: 12))
+              ]),
+              const Divider(),
               const SizedBox(height: 20),
               Image.network(
                 (getValue()?['imageUrl'] ?? "").isNotEmpty

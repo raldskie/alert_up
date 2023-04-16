@@ -1,4 +1,5 @@
 import 'package:alert_up_project/provider/reports_provider.dart';
+import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/icon_text.dart';
 import 'package:flutter/material.dart';
@@ -42,22 +43,32 @@ class _AdminHomeState extends State<AdminHome> {
           mainAxisAlignment: MainAxisAlignment.center,
           size: 20,
         ),
-        const SizedBox(height: 20),
-        Button(label: "User Tracking"),
-        const SizedBox(height: 15),
-        Button(
-            label: "Geotag Location",
-            onPress: () {
-              Navigator.pushNamed(context, '/geotag/form', arguments: {
-                "dataKey": "",
-                "diseaseKey": "",
-                "mode": "ADD",
-              });
-            }),
+        const SizedBox(height: 80),
+        Row(children: [
+          Expanded(
+            child: HomeButtons(
+                label: "Track User",
+                icon: Icons.qr_code_rounded,
+                onPress: () {
+                  Navigator.pushNamed(context, '/scan/qr',
+                      arguments: {"purpose": "TRACK_GEOTAG"});
+                }),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: HomeButtons(
+                label: "Geotag",
+                icon: Icons.person_pin_rounded,
+                onPress: () {
+                  Navigator.pushNamed(context, '/scan/qr',
+                      arguments: {"purpose": "ADD_GEOTAG"});
+                }),
+          )
+        ]),
         const SizedBox(height: 30),
-        const Divider(
-          color: Colors.grey,
-          thickness: 1,
+        Divider(
+          color: Colors.grey.withOpacity(.5),
+          thickness: .5,
         ),
         IconText(
           label: "Reports",
@@ -127,8 +138,10 @@ class ReportStatBox extends StatelessWidget {
             border: Border.all(color: Colors.grey.withOpacity(.3), width: 0),
             borderRadius: BorderRadius.circular(7)),
         child: Column(children: [
-          if (isLoading ?? true)
-            const CircularProgressIndicator()
+          if (isLoading ?? false)
+            const CircularProgressIndicator(
+              color: Colors.white,
+            )
           else
             Text(
               value,
@@ -145,6 +158,44 @@ class ReportStatBox extends StatelessWidget {
           ),
         ]),
       ),
+    );
+  }
+}
+
+class HomeButtons extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Function onPress;
+  const HomeButtons(
+      {Key? key,
+      required this.label,
+      required this.icon,
+      required this.onPress})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => onPress(),
+      borderRadius: BorderRadius.circular(7),
+      splashColor: ACCENT_COLOR.withOpacity(.1),
+      focusColor: Colors.transparent,
+      child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 25),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.red, width: 1),
+              borderRadius: BorderRadius.circular(7)),
+          child: Column(children: [
+            Icon(
+              icon,
+              color: ACCENT_COLOR,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: const TextStyle(color: ACCENT_COLOR),
+            )
+          ])),
     );
   }
 }

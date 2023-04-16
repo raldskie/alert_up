@@ -3,6 +3,7 @@ import 'package:alert_up_project/screens/admin/forms/disease_form.dart';
 import 'package:alert_up_project/screens/admin/forms/geotag_form.dart';
 import 'package:alert_up_project/screens/admin/index.dart';
 import 'package:alert_up_project/screens/admin/login_form.dart';
+import 'package:alert_up_project/screens/admin/scan_qr.dart';
 import 'package:alert_up_project/screens/admin/summary.dart';
 import 'package:alert_up_project/screens/initialize.dart';
 import 'package:alert_up_project/screens/user/geofence.dart';
@@ -36,6 +37,7 @@ class RouteGenerator {
       case '/geotag/form':
         return MaterialPageRoute(
             builder: (_) => GeoTagForm(
+                  uniqueId: args?['uniqueId'] ?? "",
                   dataKey: args?['dataKey'] ?? "",
                   diseaseKey: args?['diseaseKey'] ?? "",
                   mode: args?['mode'],
@@ -44,6 +46,11 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => GeoFence());
       case '/summary':
         return MaterialPageRoute(builder: (_) => ClassifiedSummary());
+      case '/scan/qr':
+        return MaterialPageRoute(
+            builder: (_) => QRScanner(
+                  purpose: args?['purpose'] ?? "",
+                ));
       default:
         return _errorRoute();
     }

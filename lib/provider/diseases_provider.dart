@@ -225,11 +225,11 @@ class DiseasesProvider extends ChangeNotifier {
     DatabaseReference diseaseRef =
         FirebaseDatabase.instance.ref("geotagged_individuals");
 
-    final newKey = diseaseRef.push().key;
-
     try {
       setLoading("add_geotag");
-      await diseaseRef.child(newKey ?? payload['name']).set({...payload});
+      await diseaseRef
+          .child(payload['deviceId'])
+          .set({...payload, "created_At": DateTime.now().toIso8601String()});
       await Future.delayed(const Duration(milliseconds: 500));
       callback(200, FETCH_SUCCESS);
       setLoading("stop");

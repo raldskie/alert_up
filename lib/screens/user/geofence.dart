@@ -1,4 +1,5 @@
 import 'package:alert_up_project/provider/diseases_provider.dart';
+import 'package:alert_up_project/provider/user_provider.dart';
 import 'package:alert_up_project/screens/user/user_device_id.dart';
 import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/widgets/button.dart';
@@ -25,6 +26,7 @@ class _GeoFenceState extends State<GeoFence> {
   late GoogleMapController controller;
   LocationData? currentLocation;
   dynamic areaDiseaseData;
+  String? deviceId;
 
   _setMarker({String? markerID, required LatLng pos}) async {
     MarkerId markerId = MarkerId(markerID ?? DateTime.now().toString());
@@ -81,9 +83,21 @@ class _GeoFenceState extends State<GeoFence> {
             ),
           ),
         );
+
         _setMarker(
             markerID: "CURRENT_POS",
             pos: LatLng(newLoc.latitude!, newLoc.longitude!));
+
+        UserProvider diseasesProvider =
+            Provider.of<UserProvider>(context, listen: false);
+
+        if (deviceId != null) {
+          diseasesProvider
+              .updateLocationOfTaggedPerson(deviceId: deviceId!, payload: {
+            "last_latitude": newLoc.latitude,
+            "last_longitude": newLoc.longitude,
+          });
+        }
       },
     );
   }
@@ -103,7 +117,17 @@ class _GeoFenceState extends State<GeoFence> {
         areaDiseaseData = diseasesProvider.classifiedZones
             .lastWhere((e) => e.key == poly.polygonId.value)
             .value;
-        _showNotification();
+        areaDiseaseData = (areaDiseaseData ?? {}) as Map;
+        _showNotification(
+            title: "ENTERED IN A CLASSIFIED AREA",
+            message: areaDiseaseData['alert_message']);
+        Provider.of<UserProvider>(context, listen: false)
+            .hasEnteredClassifiedArea(payload: {
+          "deviceId": deviceId,
+          "last_latitude": currentPost.latitude,
+          "last_longitude": currentPost.longitude,
+          "diseaseKey": poly.polygonId.value
+        }, callback: (code, message) {});
       }
 
       return isInside;
@@ -123,7 +147,8 @@ class _GeoFenceState extends State<GeoFence> {
     polygons.add(polyMarker);
   }
 
-  Future<void> _showNotification() async {
+  Future<void> _showNotification(
+      {required String title, required String message}) async {
     var androidDetails = const AndroidNotificationDetails(
         'channel id', 'channel name',
         channelDescription: 'channel description',
@@ -135,16 +160,17 @@ class _GeoFenceState extends State<GeoFence> {
         NotificationDetails(android: androidDetails);
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
         FlutterLocalNotificationsPlugin();
-    await flutterLocalNotificationsPlugin.show(0, 'Title of Notification',
-        'Body of Notification', generalNotificationDetails,
-        payload: 'test');
+    await flutterLocalNotificationsPlugin
+        .show(0, title, message, generalNotificationDetails, payload: 'test');
   }
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       DiseasesProvider diseasesProvider =
           Provider.of<DiseasesProvider>(context, listen: false);
+
+      deviceId = await PlatformDeviceId.getDeviceId;
 
       diseasesProvider.getClassifiedZones(callback: (code, message) {
         if (code == 200) {

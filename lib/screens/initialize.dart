@@ -11,7 +11,7 @@ class Initialize extends StatefulWidget {
 }
 
 class _InitializeState extends State<Initialize> {
-  String buildFor = "USER"; // ADMIN, USER
+  String buildFor = "ADMIN"; // ADMIN, USER
 
   @override
   void initState() {

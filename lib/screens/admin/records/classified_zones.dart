@@ -4,6 +4,7 @@ import 'package:alert_up_project/widgets/bottom_modal.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/icon_text.dart';
 import 'package:alert_up_project/widgets/loading_animation.dart';
+import 'package:alert_up_project/widgets/simple_dialog.dart';
 import 'package:alert_up_project/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -128,17 +129,33 @@ class _ClassifiedZonesState extends State<ClassifiedZones> {
                           label: "Delete",
                           borderColor: Colors.red,
                           backgroundColor: Colors.red,
-                          onPress: () => diseasesProvider.deleteClassifiedZone(
-                              loading: "delete_cz_$index",
-                              key:
-                                  diseasesProvider.classifiedZones[index].key ??
-                                      "",
-                              callback: (code, message) {
-                                launchSnackbar(
-                                    context: context,
-                                    mode: code == 200 ? "SUCCESS" : "ERROR",
-                                    message: message);
-                              }),
+                          onPress: () {
+                            dialogWithAction(context,
+                                title: "Are you sure?",
+                                description:
+                                    "This will delete this data forever.",
+                                actions: [
+                                  Button(
+                                      label: "Yes, please proceed.",
+                                      onPress: () {
+                                        Navigator.pop(context, "OK");
+                                        diseasesProvider.deleteClassifiedZone(
+                                            loading: "delete_cz_$index",
+                                            key: diseasesProvider
+                                                    .classifiedZones[index]
+                                                    .key ??
+                                                "",
+                                            callback: (code, message) {
+                                              launchSnackbar(
+                                                  context: context,
+                                                  mode: code == 200
+                                                      ? "SUCCESS"
+                                                      : "ERROR",
+                                                  message: message);
+                                            });
+                                      })
+                                ]);
+                          },
                         )
                       ])
                     ]),

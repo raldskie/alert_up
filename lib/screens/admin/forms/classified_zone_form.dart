@@ -149,7 +149,7 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
                                 (BuildContext context,
                                     StateSetter setModalState) {
                               return Modal(
-                                  title: "Long press to pin your location",
+                                  title: "Select an area",
                                   heightInPercentage: .9,
                                   content: SelectLocation(
                                     value: isLatLongValid()

@@ -23,6 +23,7 @@ class UserProvider extends ChangeNotifier {
       if (event.snapshot.value != null) {
         if ((event.snapshot.value as Map)['password'] != payload['password']) {
           callback(500, "Password incorrect. Try again.");
+          setLoading("stop");
           return;
         }
         callback(200, FETCH_SUCCESS);
@@ -35,5 +36,41 @@ class UserProvider extends ChangeNotifier {
   }
 
   hasEnteredClassifiedArea(
-      {required Map payload, required Function callback}) async {}
+      {required Map payload, required Function callback}) async {
+    if (payload['deviceId'] == null) {
+      return;
+    }
+
+    DatabaseReference diseaseRef =
+        FirebaseDatabase.instance.ref("covid_tool/trigger/user_enter");
+    try {
+      setLoading("disease_add");
+      await diseaseRef.child(payload['deviceId']).set({...payload});
+      await Future.delayed(const Duration(milliseconds: 500));
+      callback(200, FETCH_SUCCESS);
+      setLoading("stop");
+    } catch (e) {
+      callback(500, FETCH_ERROR);
+      setLoading("stop");
+    }
+  }
+
+  updateLocationOfTaggedPerson(
+      {required String deviceId, required Map payload}) async {
+    DatabaseReference taggedPerson =
+        FirebaseDatabase.instance.ref("geotagged_individuals/$deviceId");
+
+    taggedPerson.onValue.listen((event) async {
+      if (event.snapshot.value != null) {
+        if (((event.snapshot.value as Map)['status'] ?? "").toLowerCase() ==
+            "tagged") {
+          try {
+            await taggedPerson.update({...payload});
+          } catch (e) {
+            print(e);
+          }
+        }
+      }
+    });
+  }
 }

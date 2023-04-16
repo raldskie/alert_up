@@ -1,6 +1,8 @@
 import 'package:alert_up_project/provider/user_provider.dart';
+import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/form/form_theme.dart';
+import 'package:alert_up_project/widgets/icon_text.dart';
 import 'package:alert_up_project/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,6 +32,21 @@ class _LogInState extends State<LogIn> {
       child: Form(
         key: _formKey,
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          const SizedBox(height: 20),
+          Image.asset(
+            'assets/images/alert.png',
+            height: 80,
+            width: 80,
+          ),
+          const SizedBox(height: 15),
+          IconText(
+            label: "Alert UP",
+            color: ACCENT_COLOR,
+            fontWeight: FontWeight.bold,
+            mainAxisAlignment: MainAxisAlignment.center,
+            size: 20,
+          ),
+          const SizedBox(height: 80),
           TextFormField(
               initialValue: (payload['username'] ?? "").toString(),
               validator: (val) {

@@ -1,5 +1,6 @@
 import 'package:alert_up_project/provider/diseases_provider.dart';
 import 'package:alert_up_project/screens/admin/view_classified_zone.dart';
+import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/widgets/bottom_modal.dart';
 import 'package:alert_up_project/widgets/loading_animation.dart';
 import 'package:flutter/material.dart';
@@ -15,12 +16,28 @@ class ViewMap extends StatefulWidget {
 }
 
 class _ViewMapState extends State<ViewMap> {
+  String fetchMode = "CLASSIFIED"; //GEOTAGGED
   late GoogleMapController controller;
   Set<Circle> circles = {};
   Set<Marker> markers = {};
   Set<Polygon> polygons = {};
 
+  setMarker(LatLng pos) async {
+    controller.animateCamera(CameraUpdate.newCameraPosition(
+        const CameraPosition(
+            target: LatLng(8.13361481761039, 125.12661446131358), zoom: 15)));
+
+    MarkerId markerId = MarkerId(DateTime.now().toString());
+    Marker destinationMarker = Marker(markerId: markerId, position: pos);
+    setState(() {
+      markers.add(destinationMarker);
+    });
+  }
+
   void setPolygon(String? dataKey, List<LatLng> pinnedLocs) {
+    controller.animateCamera(CameraUpdate.newCameraPosition(
+        const CameraPosition(
+            target: LatLng(8.13361481761039, 125.12661446131358), zoom: 15)));
     final List<Point> points = <Point>[
       ...pinnedLocs.map((e) => Point(y: e.latitude, x: e.longitude))
     ];
@@ -54,39 +71,57 @@ class _ViewMapState extends State<ViewMap> {
     polygons.add(polyMarker);
   }
 
+  getClassified() {
+    markers = {};
+    DiseasesProvider diseasesProvider =
+        Provider.of<DiseasesProvider>(context, listen: false);
+
+    diseasesProvider.getClassifiedZones(callback: (code, message) {
+      if (code == 200) {
+        diseasesProvider.classifiedZones.forEach((e) {
+          try {
+            List<LatLng> pinnedLocations = [];
+            (((e.value as Map)['pinnedLocations'] ?? []) as List).forEach((e) {
+              pinnedLocations.add(LatLng(e['latitude'], e['longitude']));
+            });
+            if (pinnedLocations.isNotEmpty) {
+              setPolygon(e.key, pinnedLocations);
+            }
+          } catch (e) {
+            print(e);
+          }
+          setState(() {});
+        });
+      }
+    });
+  }
+
+  getGeotagged() {
+    polygons = {};
+    DiseasesProvider diseasesProvider =
+        Provider.of<DiseasesProvider>(context, listen: false);
+
+    diseasesProvider.getGeotaggedList(callback: (code, message) {
+      if (code == 200) {
+        diseasesProvider.geotaggedIndividuals.forEach((e) {
+          Map geotag = (e.value ?? {}) as Map;
+          double? latitude =
+              double.tryParse(geotag['last_latitude'].toString());
+          double? longitude =
+              double.tryParse(geotag['last_longitude'].toString());
+          if (latitude != null && longitude != null) {
+            setMarker(LatLng(latitude, longitude));
+          }
+        });
+        setState(() {});
+      }
+    });
+  }
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      DiseasesProvider diseasesProvider =
-          Provider.of<DiseasesProvider>(context, listen: false);
-
-      diseasesProvider.getClassifiedZones(callback: (code, message) {
-        if (code == 200) {
-          diseasesProvider.classifiedZones.forEach((e) {
-            try {
-              List<LatLng> pinnedLocations = [];
-              (((e.value as Map)['pinnedLocations'] ?? []) as List)
-                  .forEach((e) {
-                pinnedLocations.add(LatLng(e['latitude'], e['longitude']));
-              });
-              if (pinnedLocations.isNotEmpty) {
-                setPolygon(e.key, pinnedLocations);
-              }
-            } catch (e) {
-              print(e);
-            }
-
-            // dynamic latitude =
-            //     double.tryParse(((e.value ?? {}) as Map)['latitude'] ?? "");
-            // dynamic longitude =
-            //     double.tryParse(((e.value ?? {}) as Map)['longitude'] ?? "");
-            // if (latitude != null && latitude != null) {
-            //   addCirclesWithRadius(LatLng(latitude, longitude), 30);
-            //   addMarkerWithRadius(LatLng(latitude, longitude));
-            // }
-          });
-        }
-      });
+      getClassified();
     });
     super.initState();
   }
@@ -101,19 +136,74 @@ class _ViewMapState extends State<ViewMap> {
   Widget build(BuildContext context) {
     DiseasesProvider diseasesProvider = context.watch<DiseasesProvider>();
 
-    return diseasesProvider.loading == "classified_list"
-        ? Center(child: PumpingAnimation())
-        : GoogleMap(
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(8.13361481761039, 125.12661446131358),
-              zoom: 17,
+    return Stack(children: [
+      GoogleMap(
+        initialCameraPosition: const CameraPosition(
+          target: LatLng(8.13361481761039, 125.12661446131358),
+          zoom: 17,
+        ),
+        circles: circles,
+        markers: markers,
+        polygons: polygons,
+        onMapCreated: (GoogleMapController controller) {
+          this.controller = controller;
+        },
+      ),
+      if (["classified_list", "geotagged_list"]
+          .contains(diseasesProvider.loading))
+        Center(child: PumpingAnimation()),
+      SingleChildScrollView(
+        padding: const EdgeInsets.all(15),
+        scrollDirection: Axis.horizontal,
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          ActionChip(
+            avatar: Icon(
+              Icons.map_rounded,
+              color: fetchMode == "CLASSIFIED" ? Colors.white : Colors.grey,
+              size: 15,
             ),
-            circles: circles,
-            markers: markers,
-            polygons: polygons,
-            onMapCreated: (GoogleMapController controller) {
-              this.controller = controller;
+            label: Text(
+              "Classified Zones",
+              style: TextStyle(
+                  color: fetchMode == "CLASSIFIED" ? Colors.white : Colors.grey,
+                  fontSize: 12),
+            ),
+            backgroundColor:
+                fetchMode == "CLASSIFIED" ? ACCENT_COLOR : Colors.white,
+            elevation: 3,
+            onPressed: () {
+              setState(() {
+                fetchMode = "CLASSIFIED";
+              });
+
+              getClassified();
             },
-          );
+          ),
+          const SizedBox(width: 15),
+          ActionChip(
+            avatar: Icon(
+              Icons.person_pin_rounded,
+              color: fetchMode == "GEOTAGGED" ? Colors.white : Colors.grey,
+              size: 15,
+            ),
+            label: Text(
+              "Geotagged",
+              style: TextStyle(
+                  color: fetchMode == "GEOTAGGED" ? Colors.white : Colors.grey,
+                  fontSize: 12),
+            ),
+            backgroundColor:
+                fetchMode == "GEOTAGGED" ? ACCENT_COLOR : Colors.white,
+            elevation: 3,
+            onPressed: () {
+              setState(() {
+                fetchMode = "GEOTAGGED";
+              });
+              getGeotagged();
+            },
+          )
+        ]),
+      )
+    ]);
   }
 }

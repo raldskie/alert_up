@@ -80,6 +80,7 @@ class _EditState extends State<Diseases> {
                     const SizedBox(height: 15),
                     Row(children: [
                       Button(
+                          icon: Icons.add_box,
                           label: "Add Classified Zone",
                           onPress: () {
                             Navigator.pushNamed(
@@ -92,7 +93,8 @@ class _EditState extends State<Diseases> {
                       const SizedBox(width: 15),
                       Expanded(
                           child: Button(
-                        label: "Update Details",
+                        icon: Icons.edit_document,
+                        label: "Edit",
                         backgroundColor: Colors.black,
                         borderColor: Colors.black,
                         onPress: () {

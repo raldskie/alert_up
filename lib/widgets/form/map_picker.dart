@@ -82,6 +82,13 @@ class _SelectLocationState extends State<SelectLocation> {
         const SizedBox(
           height: 15,
         ),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15),
+          child: Text("Long press on locations to form a polygon."),
+        ),
+        const SizedBox(
+          height: 10,
+        ),
         Button(
             backgroundColor: Colors.black87,
             borderColor: Colors.transparent,
