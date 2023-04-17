@@ -89,28 +89,44 @@ class _SelectLocationState extends State<SelectLocation> {
         const SizedBox(
           height: 10,
         ),
-        Button(
-            backgroundColor: Colors.black87,
-            borderColor: Colors.transparent,
-            margin: const EdgeInsets.symmetric(horizontal: 15),
-            label: "Select Location",
-            onPress: () {
-              if (pinnedLocs.isEmpty) {
-                launchSnackbar(
-                    context: context,
-                    mode: "ERROR",
-                    message: "No location yet.");
-                return;
-              }
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          child: Row(children: [
+            Button(
+                label: "Reset Pin",
+                onPress: () {
+                  setState(() {
+                    pinnedLocs = [];
+                    polygons = {};
+                    markers = {};
+                  });
+                }),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Button(
+                  backgroundColor: Colors.black87,
+                  borderColor: Colors.transparent,
+                  label: "Select Location",
+                  onPress: () {
+                    if (pinnedLocs.isEmpty) {
+                      launchSnackbar(
+                          context: context,
+                          mode: "ERROR",
+                          message: "No location yet.");
+                      return;
+                    }
 
-              widget.onSelectLocation(pinnedLocs.map((e) {
-                return {
-                  "latitude": e.latitude,
-                  "longitude": e.longitude,
-                };
-              }).toList());
-              Navigator.pop(context);
-            }),
+                    widget.onSelectLocation(pinnedLocs.map((e) {
+                      return {
+                        "latitude": e.latitude,
+                        "longitude": e.longitude,
+                      };
+                    }).toList());
+                    Navigator.pop(context);
+                  }),
+            ),
+          ]),
+        ),
         const SizedBox(
           height: 15,
         ),

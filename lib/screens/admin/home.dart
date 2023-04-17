@@ -4,6 +4,7 @@ import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/icon_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:collection/collection.dart';
 
 class AdminHome extends StatefulWidget {
   AdminHome({Key? key}) : super(key: key);
@@ -16,8 +17,15 @@ class _AdminHomeState extends State<AdminHome> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ReportsProvider>(context, listen: false)
-          .getReport(callback: (code, message) {});
+      Provider.of<ReportsProvider>(context, listen: false).getReport(
+          callback: (code, message) {
+        if (code == 200) {
+          Provider.of<ReportsProvider>(context, listen: false).getRanking(
+              callback: (code, message) {
+            if (code == 200) {}
+          });
+        }
+      });
     });
     super.initState();
   }
@@ -28,87 +36,128 @@ class _AdminHomeState extends State<AdminHome> {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        const SizedBox(height: 20),
-        Image.asset(
-          'assets/images/alert.png',
-          height: 80,
-          width: 80,
-        ),
-        const SizedBox(height: 10),
-        IconText(
-          label: "Alert UP",
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
+      child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          size: 20,
-        ),
-        const SizedBox(height: 80),
-        Row(children: [
-          Expanded(
-            child: HomeButtons(
-                label: "Track User",
-                icon: Icons.qr_code_rounded,
-                onPress: () {
-                  Navigator.pushNamed(context, '/scan/qr',
-                      arguments: {"purpose": "TRACK_GEOTAG"});
-                }),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: HomeButtons(
-                label: "Geotag",
-                icon: Icons.person_pin_rounded,
-                onPress: () {
-                  Navigator.pushNamed(context, '/scan/qr',
-                      arguments: {"purpose": "ADD_GEOTAG"});
-                }),
-          )
-        ]),
-        const SizedBox(height: 30),
-        Divider(
-          color: Colors.grey.withOpacity(.5),
-          thickness: .5,
-        ),
-        IconText(
-          label: "Reports",
-          size: 20,
-          fontWeight: FontWeight.bold,
-        ),
-        const SizedBox(height: 20),
-        Row(children: [
-          ReportStatBox(
-              label: "Classified Zones",
-              isLoading: reportsProvider.loading == "report",
-              value: reportsProvider.classifiedZone.toString()),
-          const SizedBox(width: 20),
-          ReportStatBox(
-              label: "Break Ins",
-              isLoading: reportsProvider.loading == "report",
-              value: reportsProvider.breakIn.toString()),
-        ]),
-        const SizedBox(height: 20),
-        Row(children: [
-          ReportStatBox(
-              label: "High Risk Diseases",
-              isLoading: reportsProvider.loading == "report",
-              value: reportsProvider.highRiskDisease.toString()),
-          const SizedBox(width: 20),
-          ReportStatBox(
-              label: "Classified Puroks",
-              isLoading: reportsProvider.loading == "report",
-              value: reportsProvider.classifiedPurok.toString()),
-        ]),
-        const SizedBox(height: 20),
-        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ReportStatBox(
-                label: "Total area of Malaybalay",
-                isLoading: reportsProvider.loading == "report",
-                value: "984.4 km\u00B2"),
-          ],
-        )
-      ]),
+            const SizedBox(height: 20),
+            Center(
+              child: Image.asset(
+                'assets/images/alert.png',
+                height: 80,
+                width: 80,
+              ),
+            ),
+            const SizedBox(height: 10),
+            IconText(
+              label: "Alert UP",
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              mainAxisAlignment: MainAxisAlignment.center,
+              size: 20,
+            ),
+            const SizedBox(height: 80),
+            Row(children: [
+              Expanded(
+                child: HomeButtons(
+                    label: "Track User",
+                    icon: Icons.qr_code_rounded,
+                    onPress: () {
+                      Navigator.pushNamed(context, '/scan/qr',
+                          arguments: {"purpose": "TRACK_GEOTAG"});
+                    }),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: HomeButtons(
+                    label: "Geotag",
+                    icon: Icons.person_pin_rounded,
+                    onPress: () {
+                      Navigator.pushNamed(context, '/scan/qr',
+                          arguments: {"purpose": "ADD_GEOTAG"});
+                    }),
+              )
+            ]),
+            const SizedBox(height: 30),
+            Divider(
+              color: Colors.grey.withOpacity(.5),
+              thickness: .5,
+            ),
+            IconText(
+              label: "Reports",
+              size: 20,
+              fontWeight: FontWeight.bold,
+            ),
+            const SizedBox(height: 20),
+            Row(children: [
+              ReportStatBox(
+                  label: "Classified Zones",
+                  isLoading: reportsProvider.loading == "report",
+                  value: reportsProvider.classifiedZone.toString()),
+              const SizedBox(width: 20),
+              ReportStatBox(
+                  label: "Break Ins",
+                  isLoading: reportsProvider.loading == "report",
+                  value: reportsProvider.breakIn.toString()),
+            ]),
+            const SizedBox(height: 20),
+            Row(children: [
+              ReportStatBox(
+                  label: "High Risk Diseases",
+                  isLoading: reportsProvider.loading == "report",
+                  value: reportsProvider.highRiskDisease.toString()),
+              const SizedBox(width: 20),
+              ReportStatBox(
+                  label: "Classified Puroks",
+                  isLoading: reportsProvider.loading == "report",
+                  value: reportsProvider.classifiedPurok.toString()),
+            ]),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                ReportStatBox(
+                    label: "Total area of Malaybalay",
+                    isLoading: reportsProvider.loading == "report",
+                    value: "984.4 km\u00B2"),
+              ],
+            ),
+            const SizedBox(height: 30),
+            Divider(
+              color: Colors.grey.withOpacity(.5),
+              thickness: .5,
+            ),
+            IconText(
+              isLoading: reportsProvider.loading == "ranking",
+              label: "Ranking",
+              size: 20,
+              fontWeight: FontWeight.bold,
+            ),
+            ...reportsProvider.ranking.mapIndexed((index, e) => Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${index + 1}. ${e['disease_name']}",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 2, horizontal: 15),
+                            decoration: BoxDecoration(
+                                color: ACCENT_COLOR,
+                                borderRadius: BorderRadius.circular(3)),
+                            child: Text(
+                              "${e['geotagged'].length} Case",
+                              style: const TextStyle(color: Colors.white),
+                            ))
+                      ]),
+                )),
+            const SizedBox(height: 20),
+          ]),
     );
   }
 }

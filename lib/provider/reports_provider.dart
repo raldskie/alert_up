@@ -26,6 +26,9 @@ class ReportsProvider extends ChangeNotifier {
   String _areaOfCasisang = "";
   String get areaOfCasisang => _areaOfCasisang;
 
+  List<Map> _ranking = [];
+  List<Map> get ranking => _ranking;
+
   setLoading(String loading) async {
     _loading = loading;
     notifyListeners();
@@ -44,33 +47,33 @@ class ReportsProvider extends ChangeNotifier {
       callback(500, FETCH_ERROR);
     });
 
-    classifiedZoneRef.onValue.listen((event) {
-      int total_total = 0;
-      int total_recover = 0;
-      int total_deat = 0;
-      int total_actives = 0;
+    // classifiedZoneRef.onValue.listen((event) {
+    //   int total_total = 0;
+    //   int total_recover = 0;
+    //   int total_deat = 0;
+    //   int total_actives = 0;
 
-      for (DataSnapshot ds in event.snapshot.children) {
-        Map map = ds.value as Map;
+    //   for (DataSnapshot ds in event.snapshot.children) {
+    //     Map map = ds.value as Map;
 
-        var value_total = map["Radius"];
-        double avalue = double.parse(value_total);
-        total_total += avalue.toInt();
-        double d = 0.001;
+    //     var value_total = map["Radius"];
+    //     double avalue = double.parse(value_total);
+    //     total_total += avalue.toInt();
+    //     double d = 0.001;
 
-        double s = double.parse("$total_total");
-        double sum = s * 0.001;
-        double kmsq2 = sum * sum;
+    //     double s = double.parse("$total_total");
+    //     double sum = s * 0.001;
+    //     double kmsq2 = sum * sum;
 
-        _areaOfCasisang = "${kmsq2.toStringAsExponential(2)} Km sq";
-      }
+    //     _areaOfCasisang = "${kmsq2.toStringAsExponential(2)} Km sq";
+    //   }
 
-      setLoading("stop");
-      callback(200, FETCH_SUCCESS);
-    }, onError: (error) {
-      setLoading("stop");
-      callback(500, FETCH_ERROR);
-    });
+    //   setLoading("stop");
+    //   callback(200, FETCH_SUCCESS);
+    // }, onError: (error) {
+    //   setLoading("stop");
+    //   callback(500, FETCH_ERROR);
+    // });
 
     DatabaseReference highRiskRef =
         FirebaseDatabase.instance.ref("alerts_zone/list_of_disease");
@@ -98,6 +101,51 @@ class ReportsProvider extends ChangeNotifier {
         FirebaseDatabase.instance.ref("alerts_zone/classified_zone");
     purokRef.onValue.listen((event) {
       _classifiedPurok = event.snapshot.children.length;
+      setLoading("stop");
+      callback(200, FETCH_SUCCESS);
+    }, onError: (error) {
+      setLoading("stop");
+      callback(500, FETCH_ERROR);
+    });
+  }
+
+  getRanking({required Function callback}) async {
+    setLoading("ranking");
+    Query diseaseRef = FirebaseDatabase.instance
+        .ref("alerts_zone/list_of_disease")
+        .orderByChild("disease_name");
+
+    Query geotaggedRef = FirebaseDatabase.instance.ref("geotagged_individuals");
+
+    diseaseRef.onValue.listen((event) async {
+      _ranking = event.snapshot.children
+          .toList()
+          .map((e) => {"key": e.key, "geotagged": [], ...(e.value as Map)})
+          .toList();
+
+      geotaggedRef.onValue.listen((geotagged) {
+        geotagged.snapshot.children.toList().forEach((tag) {
+          int index = _ranking.lastIndexWhere(
+              (disease) => disease['key'] == (tag.value as Map)['diseaseKey']);
+          if (index > -1) {
+            bool hasAdded = (_ranking[index]['geotagged'] ?? []).any(
+                (user) => user['deviceId'] == (tag.value as Map)['deviceId']);
+            if (!hasAdded) {
+              _ranking[index] = {
+                ..._ranking[index],
+                "geotagged": [..._ranking[index]['geotagged'], tag.value as Map]
+              };
+            }
+
+            _ranking.sort((a, b) => (((a['geotagged'] ?? []).length) >
+                    ((b['geotagged'] ?? []).length))
+                ? -1
+                : 1);
+          }
+        });
+      });
+
+      await Future.delayed(const Duration(milliseconds: 500));
       setLoading("stop");
       callback(200, FETCH_SUCCESS);
     }, onError: (error) {

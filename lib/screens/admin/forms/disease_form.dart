@@ -95,7 +95,7 @@ class _DiseaseFormState extends State<DiseaseForm> {
           ]),
       body: diseasesProvider.loading == "disease"
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
+          : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Form(
                   child: Column(children: [
@@ -118,6 +118,7 @@ class _DiseaseFormState extends State<DiseaseForm> {
                         return "Field required";
                       }
                     },
+                    maxLines: null,
                     onChanged: (val) =>
                         setState(() => payload['disease_description'] = val),
                     decoration: textFieldStyle(label: "Disease Description")),
@@ -129,6 +130,7 @@ class _DiseaseFormState extends State<DiseaseForm> {
                         return "Field required";
                       }
                     },
+                    maxLines: null,
                     onChanged: (val) =>
                         setState(() => payload['alert_message'] = val),
                     decoration: textFieldStyle(label: "Alert Message")),

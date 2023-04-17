@@ -62,6 +62,7 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
                 Map disease = (diseasesProvider.disease?.value ?? {}) as Map;
                 payload = {
                   ...payload,
+                  "diseaseKey": diseasesProvider.disease?.key,
                   "Geo_Name": disease['disease_name'],
                   "Description": disease['disease_description'],
                   "alert_message": disease['alert_message'],
@@ -217,6 +218,14 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
                         .contains(diseasesProvider.loading),
                     label: "Save Changes",
                     onPress: () {
+                      if ((payload['pinnedLocations'] ?? []).isEmpty) {
+                        launchSnackbar(
+                            context: context,
+                            mode: "ERROR",
+                            message: "Please pin location");
+                        return;
+                      }
+
                       if (widget.mode == "ADD") {
                         diseasesProvider.addClassifiedZones(
                             payload: payload,
@@ -239,9 +248,14 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
                                   context: context,
                                   mode: code == 200 ? "SUCCESS" : "ERROR",
                                   message: message);
+
+                              if (code == 200) {
+                                Navigator.pop(context);
+                              }
                             });
                       }
-                    })
+                    }),
+                const SizedBox(height: 20),
               ]))),
     );
   }
