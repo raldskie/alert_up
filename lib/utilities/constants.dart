@@ -15,8 +15,8 @@ Map<int, Color> color = {
 };
 MaterialColor APP_COLOR_THEME = MaterialColor(0xFF880E4F, color);
 
-const String FETCH_SUCCESS = "Data fetched successfully";
-const String FETCH_ERROR = "Error in fetching data";
+const String FETCH_SUCCESS = "Success";
+const String FETCH_ERROR = "An error occurred.";
 
 const USER_PLACEHOLDER_IMAGE =
     "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png?20170328184010";

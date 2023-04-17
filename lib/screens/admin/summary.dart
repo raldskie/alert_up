@@ -65,9 +65,9 @@ class _ClassifiedSummaryState extends State<ClassifiedSummary> {
                     DataColumn(
                       label: Text('Description'),
                     ),
-                    DataColumn(
-                      label: Text('Actions'),
-                    ),
+                    // DataColumn(
+                    //   label: Text('Actions'),
+                    // ),
                   ], rows: [
                     ...diseasesProvider.classifiedZones.map((value) {
                       if (value.value is Map) {
@@ -82,7 +82,7 @@ class _ClassifiedSummaryState extends State<ClassifiedSummary> {
                           DataCell(SizedBox(
                               width: 200,
                               child: Text(classifiedZone['Description']))),
-                          DataCell(Button(label: "Show On Map")),
+                          // DataCell(Button(label: "Show On Map")),
                         ]);
                       }
                       return DataRow(cells: [
@@ -90,7 +90,7 @@ class _ClassifiedSummaryState extends State<ClassifiedSummary> {
                         DataCell(Text("No Data")),
                         DataCell(SizedBox(width: 200, child: Text("No Data"))),
                         DataCell(SizedBox(width: 200, child: Text("No Data"))),
-                        DataCell(Button(label: "Show On Map")),
+                        // DataCell(Button(label: "Show On Map")),
                       ]);
                     })
                   ]),

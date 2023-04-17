@@ -42,13 +42,38 @@ class _ViewMapState extends State<ViewMap> {
       ...pinnedLocs.map((e) => Point(y: e.latitude, x: e.longitude))
     ];
 
+    int diseaseCount = 0;
+    DiseasesProvider diseasesProvider =
+        Provider.of<DiseasesProvider>(context, listen: false);
+
+    diseasesProvider.geotaggedIndividuals.forEach((e) {
+      Map geotag = (e.value ?? {}) as Map;
+      double? latitude = double.tryParse(geotag['last_latitude'].toString());
+      double? longitude = double.tryParse(geotag['last_longitude'].toString());
+      if (latitude != null && longitude != null) {
+        bool isInside =
+            Poly.isPointInPolygon(Point(x: longitude, y: latitude), points);
+        if (isInside) diseaseCount += 1;
+      }
+    });
+
+    Color polyColor = Colors.red;
+
+    if (diseaseCount < 10) {
+      polyColor = Colors.green;
+    }
+
+    if (diseaseCount > 10 && diseaseCount <= 20) {
+      polyColor = Colors.orange;
+    }
+
     PolygonId polygonId = PolygonId(dataKey ?? DateTime.now().toString());
     Polygon polyMarker = Polygon(
       polygonId: polygonId,
       points: pinnedLocs,
       strokeWidth: 2,
-      strokeColor: Colors.red,
-      fillColor: Colors.redAccent.withOpacity(.2),
+      strokeColor: polyColor,
+      fillColor: polyColor.withOpacity(.2),
       consumeTapEvents: true,
       onTap: () {
         showModalBottomSheet(
@@ -76,21 +101,26 @@ class _ViewMapState extends State<ViewMap> {
     DiseasesProvider diseasesProvider =
         Provider.of<DiseasesProvider>(context, listen: false);
 
-    diseasesProvider.getClassifiedZones(callback: (code, message) {
+    diseasesProvider.getGeotaggedList(callback: (code, message) {
       if (code == 200) {
-        diseasesProvider.classifiedZones.forEach((e) {
-          try {
-            List<LatLng> pinnedLocations = [];
-            (((e.value as Map)['pinnedLocations'] ?? []) as List).forEach((e) {
-              pinnedLocations.add(LatLng(e['latitude'], e['longitude']));
+        diseasesProvider.getClassifiedZones(callback: (code, message) {
+          if (code == 200) {
+            diseasesProvider.classifiedZones.forEach((e) {
+              try {
+                List<LatLng> pinnedLocations = [];
+                (((e.value as Map)['pinnedLocations'] ?? []) as List)
+                    .forEach((e) {
+                  pinnedLocations.add(LatLng(e['latitude'], e['longitude']));
+                });
+                if (pinnedLocations.isNotEmpty) {
+                  setPolygon(e.key, pinnedLocations);
+                }
+              } catch (e) {
+                print(e);
+              }
+              setState(() {});
             });
-            if (pinnedLocations.isNotEmpty) {
-              setPolygon(e.key, pinnedLocations);
-            }
-          } catch (e) {
-            print(e);
           }
-          setState(() {});
         });
       }
     });
@@ -137,72 +167,117 @@ class _ViewMapState extends State<ViewMap> {
     DiseasesProvider diseasesProvider = context.watch<DiseasesProvider>();
 
     return Stack(children: [
-      GoogleMap(
-        initialCameraPosition: const CameraPosition(
-          target: LatLng(8.13361481761039, 125.12661446131358),
-          zoom: 17,
-        ),
-        circles: circles,
-        markers: markers,
-        polygons: polygons,
-        onMapCreated: (GoogleMapController controller) {
-          this.controller = controller;
-        },
-      ),
+      Column(children: [
+        Container(
+            color: Colors.white,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(15),
+              scrollDirection: Axis.horizontal,
+              child: Row(children: [
+                Container(
+                    height: 15,
+                    width: 15,
+                    decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10))),
+                const SizedBox(width: 10),
+                const Text("High risk area",
+                    style: TextStyle(color: Colors.grey, fontSize: 12)),
+                const SizedBox(width: 20),
+                Container(
+                    height: 15,
+                    width: 15,
+                    decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(10))),
+                const SizedBox(width: 10),
+                const Text("Medium risk area",
+                    style: TextStyle(color: Colors.grey, fontSize: 12)),
+                const SizedBox(width: 20),
+                Container(
+                    height: 15,
+                    width: 15,
+                    decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(10))),
+                const SizedBox(width: 10),
+                const Text("Low risk area",
+                    style: TextStyle(color: Colors.grey, fontSize: 12)),
+              ]),
+            )),
+        Expanded(
+            child: GoogleMap(
+          initialCameraPosition: const CameraPosition(
+            target: LatLng(8.13361481761039, 125.12661446131358),
+            zoom: 17,
+          ),
+          circles: circles,
+          markers: markers,
+          polygons: polygons,
+          onMapCreated: (GoogleMapController controller) {
+            this.controller = controller;
+          },
+        )),
+      ]),
       if (["classified_list", "geotagged_list"]
           .contains(diseasesProvider.loading))
         Center(child: PumpingAnimation()),
-      SingleChildScrollView(
-        padding: const EdgeInsets.all(15),
-        scrollDirection: Axis.horizontal,
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          ActionChip(
-            avatar: Icon(
-              Icons.map_rounded,
-              color: fetchMode == "CLASSIFIED" ? Colors.white : Colors.grey,
-              size: 15,
-            ),
-            label: Text(
-              "Classified Zones",
-              style: TextStyle(
-                  color: fetchMode == "CLASSIFIED" ? Colors.white : Colors.grey,
-                  fontSize: 12),
-            ),
-            backgroundColor:
-                fetchMode == "CLASSIFIED" ? ACCENT_COLOR : Colors.white,
-            elevation: 3,
-            onPressed: () {
-              setState(() {
-                fetchMode = "CLASSIFIED";
-              });
+      Positioned(
+        bottom: 0,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(15),
+          scrollDirection: Axis.horizontal,
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            ActionChip(
+              avatar: Icon(
+                Icons.map_rounded,
+                color: fetchMode == "CLASSIFIED" ? Colors.white : Colors.grey,
+                size: 15,
+              ),
+              label: Text(
+                "Classified Zones",
+                style: TextStyle(
+                    color:
+                        fetchMode == "CLASSIFIED" ? Colors.white : Colors.grey,
+                    fontSize: 12),
+              ),
+              backgroundColor:
+                  fetchMode == "CLASSIFIED" ? ACCENT_COLOR : Colors.white,
+              elevation: 3,
+              onPressed: () {
+                setState(() {
+                  fetchMode = "CLASSIFIED";
+                });
 
-              getClassified();
-            },
-          ),
-          const SizedBox(width: 15),
-          ActionChip(
-            avatar: Icon(
-              Icons.person_pin_rounded,
-              color: fetchMode == "GEOTAGGED" ? Colors.white : Colors.grey,
-              size: 15,
+                getClassified();
+              },
             ),
-            label: Text(
-              "Geotagged",
-              style: TextStyle(
-                  color: fetchMode == "GEOTAGGED" ? Colors.white : Colors.grey,
-                  fontSize: 12),
-            ),
-            backgroundColor:
-                fetchMode == "GEOTAGGED" ? ACCENT_COLOR : Colors.white,
-            elevation: 3,
-            onPressed: () {
-              setState(() {
-                fetchMode = "GEOTAGGED";
-              });
-              getGeotagged();
-            },
-          )
-        ]),
+            const SizedBox(width: 15),
+            ActionChip(
+              avatar: Icon(
+                Icons.person_pin_rounded,
+                color: fetchMode == "GEOTAGGED" ? Colors.white : Colors.grey,
+                size: 15,
+              ),
+              label: Text(
+                "Geotagged",
+                style: TextStyle(
+                    color:
+                        fetchMode == "GEOTAGGED" ? Colors.white : Colors.grey,
+                    fontSize: 12),
+              ),
+              backgroundColor:
+                  fetchMode == "GEOTAGGED" ? ACCENT_COLOR : Colors.white,
+              elevation: 3,
+              onPressed: () {
+                setState(() {
+                  fetchMode = "GEOTAGGED";
+                });
+                getGeotagged();
+              },
+            )
+          ]),
+        ),
       )
     ]);
   }

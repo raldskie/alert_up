@@ -75,6 +75,10 @@ class _AdminHomeState extends State<AdminHome> {
                     onPress: () {
                       Navigator.pushNamed(context, '/scan/qr',
                           arguments: {"purpose": "ADD_GEOTAG"});
+                      // Navigator.pushNamed(context, "/geotag/form", arguments: {
+                      //   "uniqueId": "f762dbb7e796a8f5",
+                      //   "mode": "ADD",
+                      // });
                     }),
               )
             ]),

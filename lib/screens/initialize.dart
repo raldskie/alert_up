@@ -11,7 +11,7 @@ class Initialize extends StatefulWidget {
 }
 
 class _InitializeState extends State<Initialize> {
-  String buildFor = "ADMIN"; // ADMIN, USER
+  String buildFor = "USER"; // ADMIN, USER
 
   @override
   void initState() {
@@ -24,7 +24,7 @@ class _InitializeState extends State<Initialize> {
     super.initState();
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.white,

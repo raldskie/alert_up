@@ -141,14 +141,15 @@ class _GeoFenceState extends State<GeoFence> {
             double.parse(calculateDistance(currentPost, enterPos!));
 
         if (distance == 0.0) {
+          print("PLAY AUDIO");
           AudioPlayer().play(AssetSource('sounds/enter.mp3'));
         }
 
         // if (distance > .01 && distance < .02) {
         //   AudioPlayer().play(AssetSource('sounds/alert.mp3'));
         // }
-        print(
-            "calculateDistance ENTER ${double.parse(calculateDistance(currentPost, enterPos!))}");
+        // print(
+        //     "calculateDistance ENTER ${double.parse(calculateDistance(currentPost, enterPos!))}");
       }
 
       // else {
@@ -186,7 +187,7 @@ class _GeoFenceState extends State<GeoFence> {
         channelDescription: 'channel description',
         importance: Importance.high,
         priority: Priority.high,
-        icon: "@mipmap/ic_launcher",
+        icon: "@mipmap/launcher_icon",
         actions: [AndroidNotificationAction("ACK_ALERT", "ACKNOWLEDGE ALERT")],
         ticker: 'test');
     // Acknowledge Alert

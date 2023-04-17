@@ -93,6 +93,9 @@ class _GeoTagFormState extends State<GeoTagForm> {
       } else {
         getLocation();
         payload['deviceId'] = widget.uniqueId;
+
+        Provider.of<DiseasesProvider>(context, listen: false)
+            .getDiseaseList(callback: (code, message) {});
       }
     });
     super.initState();
