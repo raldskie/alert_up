@@ -113,7 +113,6 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
                         return "Field required";
                       }
                     },
-                    keyboardType: TextInputType.number,
                     onChanged: (val) => setState(() => payload['Purok'] = val),
                     decoration: textFieldStyle(label: "Purok")),
                 // const SizedBox(height: 15),
@@ -214,19 +213,34 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
                     decoration: textFieldStyle(label: "Alert Message")),
                 const SizedBox(height: 15),
                 Button(
-                    isLoading:
-                        diseasesProvider.loading == "classified_zone_edit",
+                    isLoading: ["add_cz", "classified_zone_edit"]
+                        .contains(diseasesProvider.loading),
                     label: "Save Changes",
                     onPress: () {
-                      diseasesProvider.updateClassifiedZone(
-                          key: widget.dataKey!,
-                          payload: payload,
-                          callback: (code, message) {
-                            launchSnackbar(
-                                context: context,
-                                mode: code == 200 ? "SUCCESS" : "ERROR",
-                                message: message);
-                          });
+                      if (widget.mode == "ADD") {
+                        diseasesProvider.addClassifiedZones(
+                            payload: payload,
+                            callback: (code, message) {
+                              launchSnackbar(
+                                  context: context,
+                                  mode: code == 200 ? "SUCCESS" : "ERROR",
+                                  message: message);
+
+                              if (code == 200) {
+                                Navigator.pop(context);
+                              }
+                            });
+                      } else {
+                        diseasesProvider.updateClassifiedZone(
+                            key: widget.dataKey!,
+                            payload: payload,
+                            callback: (code, message) {
+                              launchSnackbar(
+                                  context: context,
+                                  mode: code == 200 ? "SUCCESS" : "ERROR",
+                                  message: message);
+                            });
+                      }
                     })
               ]))),
     );

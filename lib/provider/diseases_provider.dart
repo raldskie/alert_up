@@ -64,7 +64,7 @@ class DiseasesProvider extends ChangeNotifier {
     try {
       setLoading(loading);
       await diseaseRef.set(null);
-      callback(200, FETCH_SUCCESS);
+      callback(200, "Data deleted successfully");
       await Future.delayed(const Duration(milliseconds: 500));
       setLoading("stop");
     } catch (e) {
@@ -175,11 +175,15 @@ class DiseasesProvider extends ChangeNotifier {
     final newKey = diseaseRef.push().key;
 
     try {
+      setLoading("add_cz");
       await diseaseRef.child(newKey ?? payload['Geo_Name']).set({...payload});
       await Future.delayed(const Duration(milliseconds: 500));
-      callback(200, FETCH_SUCCESS);
+      callback(200, "Successfully Added");
+      await Future.delayed(const Duration(milliseconds: 500));
+      setLoading("stop");
     } catch (e) {
       callback(500, FETCH_ERROR);
+      setLoading("stop");
     }
   }
 

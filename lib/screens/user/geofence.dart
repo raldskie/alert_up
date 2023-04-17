@@ -1,9 +1,11 @@
 import 'package:alert_up_project/provider/diseases_provider.dart';
 import 'package:alert_up_project/provider/user_provider.dart';
 import 'package:alert_up_project/screens/user/user_device_id.dart';
+import 'package:alert_up_project/utilities/calc_coords_dist.dart';
 import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/custom_app_bar.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -27,6 +29,9 @@ class _GeoFenceState extends State<GeoFence> {
   LocationData? currentLocation;
   dynamic areaDiseaseData;
   String? deviceId;
+
+  LatLng? enterPos;
+  LatLng? exitPos;
 
   _setMarker({String? markerID, required LatLng pos}) async {
     MarkerId markerId = MarkerId(markerID ?? DateTime.now().toString());
@@ -128,7 +133,34 @@ class _GeoFenceState extends State<GeoFence> {
           "last_longitude": currentPost.longitude,
           "diseaseKey": poly.polygonId.value
         }, callback: (code, message) {});
+
+        enterPos ??= currentPost;
+        exitPos = currentPost;
+
+        double distance =
+            double.parse(calculateDistance(currentPost, enterPos!));
+
+        if (distance == 0.0) {
+          AudioPlayer().play(AssetSource('sounds/enter.mp3'));
+        }
+
+        // if (distance > .01 && distance < .02) {
+        //   AudioPlayer().play(AssetSource('sounds/alert.mp3'));
+        // }
+        print(
+            "calculateDistance ENTER ${double.parse(calculateDistance(currentPost, enterPos!))}");
       }
+
+      // else {
+      //   if (exitPos != null &&
+      //       double.parse(calculateDistance(currentPost, exitPos!)) == 0) {
+      //     print(
+      //         "calculateDistance EXIT ${double.parse(calculateDistance(currentPost, exitPos!))}");
+      //     AudioPlayer().play(AssetSource('sounds/exit.mp3'));
+      //     enterPos = null;
+      //     exitPos = null;
+      //   }
+      // }
 
       return isInside;
     });
@@ -155,7 +187,9 @@ class _GeoFenceState extends State<GeoFence> {
         importance: Importance.high,
         priority: Priority.high,
         icon: "@mipmap/ic_launcher",
+        actions: [AndroidNotificationAction("ACK_ALERT", "ACKNOWLEDGE ALERT")],
         ticker: 'test');
+    // Acknowledge Alert
     var generalNotificationDetails =
         NotificationDetails(android: androidDetails);
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =

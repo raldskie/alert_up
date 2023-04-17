@@ -146,6 +146,10 @@ class _ViewGeotaggedState extends State<ViewGeotagged> {
                 errorBuilder: (context, error, stackTrace) => Container(),
               ),
               const SizedBox(height: 20),
+              const Text("Is confidential?",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text((getValue()?['isConfidential'] ?? false) ? "Yes" : "No"),
+              const SizedBox(height: 20),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(getValue()?['name'] ?? "Anonymous",
@@ -159,6 +163,10 @@ class _ViewGeotaggedState extends State<ViewGeotagged> {
                             : const Color.fromARGB(255, 66, 65, 65),
                     label: getValue()?['status'] ?? "No Status"),
               ]),
+              const SizedBox(height: 20),
+              const Text("Disease",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(getValue()?['diseaseName'] ?? "No info."),
               const SizedBox(height: 20),
               const Text("Purok",
                   style: TextStyle(fontWeight: FontWeight.bold)),

@@ -38,10 +38,10 @@ class _DiseaseFormState extends State<DiseaseForm> {
                 payload = (diseasesProvider.disease?.value ?? {}) as Map;
                 return;
               }
-              launchSnackbar(
-                  context: context,
-                  mode: code == 200 ? "SUCCESS" : "ERROR",
-                  message: message);
+              // launchSnackbar(
+              //     context: context,
+              //     mode: code == 200 ? "SUCCESS" : "ERROR",
+              //     message: message);
               Navigator.pop(context);
             });
       }

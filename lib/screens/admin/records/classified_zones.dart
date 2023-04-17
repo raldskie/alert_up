@@ -35,8 +35,6 @@ class _ClassifiedZonesState extends State<ClassifiedZones> {
     }
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {}, child: const Icon(Icons.add_box)),
       body: ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
           itemCount: diseasesProvider.classifiedZones.length,

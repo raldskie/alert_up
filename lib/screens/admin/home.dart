@@ -103,9 +103,9 @@ class _AdminHomeState extends State<AdminHome> {
         Row(
           children: [
             ReportStatBox(
-                label: "Total area of casisang",
+                label: "Total area of Malaybalay",
                 isLoading: reportsProvider.loading == "report",
-                value: "32.84 Km sq"),
+                value: "984.4 km\u00B2"),
           ],
         )
       ]),

@@ -9,6 +9,7 @@ import 'package:alert_up_project/widgets/icon_text.dart';
 import 'package:alert_up_project/widgets/loading_animation.dart';
 import 'package:alert_up_project/widgets/single_image_picker.dart';
 import 'package:alert_up_project/widgets/snackbar.dart';
+import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +51,8 @@ class _GeoTagFormState extends State<GeoTagForm> {
     "detected_latitude": null,
     "detected_longitude": null,
     "status": "Tagged",
+    "diseaseKey": null,
+    "diseaseName": null
   };
 
   getLocation() {
@@ -76,6 +79,8 @@ class _GeoTagFormState extends State<GeoTagForm> {
                 if (code == 200) {
                   payload = (diseasesProvider.geoTaggedIndividual?.value ?? {})
                       as Map;
+                  Provider.of<DiseasesProvider>(context, listen: false)
+                      .getDiseaseList(callback: (code, message) {});
                   return;
                 }
                 launchSnackbar(
@@ -206,6 +211,35 @@ class _GeoTagFormState extends State<GeoTagForm> {
                       const SizedBox(width: 5),
                       const Text("Is Confidential?")
                     ]),
+                    const SizedBox(height: 15),
+                    if (diseasesProvider.loading == "disease_list")
+                      IconText(isLoading: true, label: "Getting disease")
+                    else
+                      DropDownTextField(
+                          initialValue: payload['diseaseName'],
+                          clearOption: true,
+                          clearIconProperty: IconProperty(color: ACCENT_COLOR),
+                          searchDecoration: const InputDecoration(
+                              hintText: "enter your custom hint text here"),
+                          dropDownItemCount: 6,
+                          textFieldDecoration: textFieldStyle(
+                              label: "Type of disease", hint: ""),
+                          dropdownRadius: 5,
+                          dropDownList: diseasesProvider.diseases.map((e) {
+                            Map disease = (e.value ?? {}) as Map;
+
+                            return DropDownValueModel(
+                              value: e.key,
+                              name: disease['disease_name'] ?? "",
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            payload = {
+                              ...payload,
+                              "diseaseKey": val.value,
+                              "diseaseName": val.name
+                            };
+                          }),
                     const SizedBox(height: 15),
                     TextFormField(
                         initialValue: (payload['name'] ?? "").toString(),
