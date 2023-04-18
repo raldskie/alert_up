@@ -9,7 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
-generatePDF(BuildContext context, {required List classifiedZones}) async {
+Future<bool?> generatePDF(BuildContext context,
+    {required List classifiedZones}) async {
   //Create a new PDF document
   PdfDocument document = PdfDocument();
 
@@ -80,10 +81,12 @@ generatePDF(BuildContext context, {required List classifiedZones}) async {
             mode: "SUCCESS",
             message: "PDF has been saved to /alert_up_project/$fileName.pdf.");
       }
+      return true;
     }
   } catch (e) {
     print(e);
     launchSnackbar(context: context, mode: "ERROR", message: "Failed to save");
+    return false;
   }
 
   document.dispose();

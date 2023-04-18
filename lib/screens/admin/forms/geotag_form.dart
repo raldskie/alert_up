@@ -72,6 +72,8 @@ class _GeoTagFormState extends State<GeoTagForm> {
         DiseasesProvider diseasesProvider =
             Provider.of<DiseasesProvider>(context, listen: false);
 
+        diseasesProvider.getDiseaseList(callback: (code, message) {});
+
         if ((widget.dataKey ?? "").isNotEmpty) {
           diseasesProvider.getGeotaggedIndividual(
               dataKey: widget.dataKey!,
@@ -79,8 +81,6 @@ class _GeoTagFormState extends State<GeoTagForm> {
                 if (code == 200) {
                   payload = (diseasesProvider.geoTaggedIndividual?.value ?? {})
                       as Map;
-                  Provider.of<DiseasesProvider>(context, listen: false)
-                      .getDiseaseList(callback: (code, message) {});
                   return;
                 }
                 launchSnackbar(
@@ -93,7 +93,6 @@ class _GeoTagFormState extends State<GeoTagForm> {
       } else {
         getLocation();
         payload['deviceId'] = widget.uniqueId;
-
         Provider.of<DiseasesProvider>(context, listen: false)
             .getDiseaseList(callback: (code, message) {});
       }
@@ -144,7 +143,7 @@ class _GeoTagFormState extends State<GeoTagForm> {
     return Scaffold(
         appBar: customAppBar(context, title: "Geotag Form", centerTitle: true),
         backgroundColor: Colors.white,
-        body: diseasesProvider.loading == "geotagged"
+        body: ["geotagged"].contains(diseasesProvider.loading)
             ? Center(child: PumpingAnimation())
             : Column(children: [
                 Expanded(

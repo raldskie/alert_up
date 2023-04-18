@@ -11,20 +11,17 @@ class Initialize extends StatefulWidget {
 }
 
 class _InitializeState extends State<Initialize> {
-  String buildFor = "USER"; // ADMIN, USER
-
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future.delayed(const Duration(milliseconds: 1000));
       if (!mounted) return;
-      Navigator.pushNamedAndRemoveUntil(
-          context, buildFor == "ADMIN" ? '/login' : '/user', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
     });
     super.initState();
   }
 
-@override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.white,

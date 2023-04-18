@@ -27,23 +27,31 @@ class _ClassifiedSummaryState extends State<ClassifiedSummary> {
 
   @override
   Widget build(BuildContext context) {
+    bool isGeneratingPDF = false;
     DiseasesProvider diseasesProvider = context.watch<DiseasesProvider>();
 
     return Scaffold(
         appBar: customAppBar(context, actions: [
           Button(
+              isLoading: isGeneratingPDF,
               label: "Generate PDF",
               icon: Icons.picture_as_pdf_rounded,
               backgroundColor: Colors.transparent,
               borderColor: Colors.transparent,
               textColor: ACCENT_COLOR,
-              onPress: () {
-                generatePDF(context,
+              onPress: () async {
+                setState(() {
+                  isGeneratingPDF = true;
+                });
+                await generatePDF(context,
                     classifiedZones: diseasesProvider.classifiedZones
                         .map((e) => e.value is Map ? e.value as Map : null)
                         .toList()
                         .where((element) => element != null)
                         .toList());
+                setState(() {
+                  isGeneratingPDF = false;
+                });
               })
         ]),
         body: diseasesProvider.loading == "classified_list"

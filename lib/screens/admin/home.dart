@@ -22,7 +22,12 @@ class _AdminHomeState extends State<AdminHome> {
         if (code == 200) {
           Provider.of<ReportsProvider>(context, listen: false).getRanking(
               callback: (code, message) {
-            if (code == 200) {}
+            if (code == 200) {
+              Provider.of<ReportsProvider>(context, listen: false)
+                  .getActiveCasesCount(callback: (code, message) {
+                if (code == 200) {}
+              });
+            }
           });
         }
       });
@@ -160,6 +165,42 @@ class _AdminHomeState extends State<AdminHome> {
                             ))
                       ]),
                 )),
+            const SizedBox(height: 30),
+            Divider(
+              color: Colors.grey.withOpacity(.5),
+              thickness: .5,
+            ),
+            IconText(
+              isLoading: reportsProvider.loading == "active_cases",
+              label: "Active Cases",
+              size: 20,
+              fontWeight: FontWeight.bold,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(5),
+              child: Text(
+                reportsProvider.activeCases.toString(),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+              ),
+            ),
+            const SizedBox(height: 30),
+            Divider(
+              color: Colors.grey.withOpacity(.5),
+              thickness: .5,
+            ),
+            IconText(
+              isLoading: reportsProvider.loading == "active_cases",
+              label: "Inactive Cases",
+              size: 20,
+              fontWeight: FontWeight.bold,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(5),
+              child: Text(
+                reportsProvider.inActiveCases.toString(),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+              ),
+            ),
             const SizedBox(height: 20),
           ]),
     );

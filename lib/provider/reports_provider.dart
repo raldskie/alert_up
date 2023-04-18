@@ -29,6 +29,12 @@ class ReportsProvider extends ChangeNotifier {
   List<Map> _ranking = [];
   List<Map> get ranking => _ranking;
 
+  int _activeCases = 0;
+  int get activeCases => _activeCases;
+
+  int _inActiveCases = 0;
+  int get inActiveCases => _inActiveCases;
+
   setLoading(String loading) async {
     _loading = loading;
     notifyListeners();
@@ -145,6 +151,33 @@ class ReportsProvider extends ChangeNotifier {
         });
       });
 
+      await Future.delayed(const Duration(milliseconds: 500));
+      setLoading("stop");
+      callback(200, FETCH_SUCCESS);
+    }, onError: (error) {
+      setLoading("stop");
+      callback(500, FETCH_ERROR);
+    });
+  }
+
+  getActiveCasesCount({required Function callback}) async {
+    setLoading("active_cases");
+
+    Query geotaggedRef = FirebaseDatabase.instance.ref("geotagged_individuals");
+
+    geotaggedRef.onValue.listen((event) async {
+      print(event.snapshot.children);
+      _activeCases = event.snapshot.children.fold(0, (previousValue, element) {
+        return (((element.value ?? {}) as Map)['status'] ?? false) == "Tagged"
+            ? previousValue + 1
+            : previousValue + 0;
+      });
+      _inActiveCases =
+          event.snapshot.children.fold(0, (previousValue, element) {
+        return (((element.value ?? {}) as Map)['status'] ?? false) == "Untagged"
+            ? previousValue + 1
+            : previousValue + 0;
+      });
       await Future.delayed(const Duration(milliseconds: 500));
       setLoading("stop");
       callback(200, FETCH_SUCCESS);
