@@ -2,9 +2,11 @@ import 'package:alert_up_project/provider/reports_provider.dart';
 import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/icon_text.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class AdminHome extends StatefulWidget {
   AdminHome({Key? key}) : super(key: key);
@@ -171,6 +173,34 @@ class _AdminHomeState extends State<AdminHome> {
               thickness: .5,
             ),
             IconText(
+              isLoading: reportsProvider.loading == "ranking",
+              label: "Victims per disease",
+              size: 20,
+              fontWeight: FontWeight.bold,
+            ),
+            const SizedBox(height: 30),
+            SizedBox(
+                height: 300,
+                child: SfCartesianChart(
+                    primaryXAxis: CategoryAxis(),
+                    primaryYAxis: NumericAxis(decimalPlaces: 0, interval: 1),
+                    series: <ChartSeries>[
+                      BarSeries<ChartData, String>(
+                          dataSource: [
+                            ...reportsProvider.ranking.map((e) => ChartData(
+                                label: e['disease_name'] ?? "",
+                                value: (e['geotagged'].length)))
+                          ],
+                          color: ACCENT_COLOR,
+                          xValueMapper: (ChartData data, _) => data.label,
+                          yValueMapper: (ChartData data, _) => data.value),
+                    ])),
+            const SizedBox(height: 30),
+            Divider(
+              color: Colors.grey.withOpacity(.5),
+              thickness: .5,
+            ),
+            IconText(
               isLoading: reportsProvider.loading == "active_cases",
               label: "Active Cases",
               size: 20,
@@ -190,7 +220,7 @@ class _AdminHomeState extends State<AdminHome> {
             ),
             IconText(
               isLoading: reportsProvider.loading == "active_cases",
-              label: "Inactive Cases",
+              label: "Cases Healed",
               size: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -292,4 +322,14 @@ class HomeButtons extends StatelessWidget {
           ])),
     );
   }
+}
+
+class ChartData {
+  final String label;
+  final int value;
+
+  ChartData({
+    required this.label,
+    required this.value,
+  });
 }

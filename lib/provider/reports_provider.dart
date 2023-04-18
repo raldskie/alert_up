@@ -166,7 +166,6 @@ class ReportsProvider extends ChangeNotifier {
     Query geotaggedRef = FirebaseDatabase.instance.ref("geotagged_individuals");
 
     geotaggedRef.onValue.listen((event) async {
-      print(event.snapshot.children);
       _activeCases = event.snapshot.children.fold(0, (previousValue, element) {
         return (((element.value ?? {}) as Map)['status'] ?? false) == "Tagged"
             ? previousValue + 1
