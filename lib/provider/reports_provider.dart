@@ -48,7 +48,15 @@ class ReportsProvider extends ChangeNotifier {
     DatabaseReference classifiedZoneRef =
         FirebaseDatabase.instance.ref("alerts_zone").child("classified_zone");
     classifiedZoneRef.onValue.listen((event) {
-      _classifiedZone = event.snapshot.children.length;
+      _classifiedZone = event.snapshot.children.where((e) {
+        DateTime? createdAt =
+            DateTime.tryParse((e.value as Map)['createdAt'].toString());
+        if (createdAt != null && startDate != null && endDate != null) {
+          if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+            return true;
+        }
+        return false;
+      }).length;
       setLoading("stop");
       callback(200, FETCH_SUCCESS);
     }, onError: (error) {

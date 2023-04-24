@@ -62,12 +62,6 @@ class _AdminHomeState extends State<AdminHome> {
         endDate = DateFormat("yyyy-MM-dd")
             .format(DateTime(now.year, now.month + 1, 0));
       });
-
-      Provider.of<AppProvider>(context, listen: false)
-          .setStartDate(DateTime.parse(startDate));
-      Provider.of<AppProvider>(context, listen: false)
-          .setEndDate(DateTime.parse(endDate));
-
       getStats();
     });
     super.initState();

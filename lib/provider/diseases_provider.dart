@@ -129,13 +129,30 @@ class DiseasesProvider extends ChangeNotifier {
     });
   }
 
-  getClassifiedZones({required Function callback}) async {
+  getClassifiedZones(
+      {Map<String, DateTime>? dates, required Function callback}) async {
+    DateTime? startDate = dates?['startDate'];
+    DateTime? endDate = dates?['endDate'];
+
     setLoading("classified_list");
     Query diseaseRef =
         FirebaseDatabase.instance.ref("alerts_zone/classified_zone");
 
     diseaseRef.onValue.listen((event) async {
-      _classifiedZones = event.snapshot.children.toList();
+      if (dates != null) {
+        _classifiedZones = event.snapshot.children.where((e) {
+          DateTime? createdAt =
+              DateTime.tryParse((e.value as Map)['createdAt'].toString());
+          if (createdAt != null && startDate != null && endDate != null) {
+            if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+              return true;
+          }
+          return false;
+        }).toList();
+      } else {
+        _classifiedZones = event.snapshot.children.toList();
+      }
+
       await Future.delayed(const Duration(milliseconds: 500));
       callback(200, FETCH_SUCCESS);
       setLoading("stop");
@@ -176,7 +193,10 @@ class DiseasesProvider extends ChangeNotifier {
 
     try {
       setLoading("add_cz");
-      await diseaseRef.child(newKey ?? payload['Geo_Name']).set({...payload});
+      await diseaseRef.child(newKey ?? payload['Geo_Name']).set({
+        ...payload,
+        "createdAt": DateTime.now().toLocal().toIso8601String()
+      });
       await Future.delayed(const Duration(milliseconds: 500));
       callback(200, "Successfully Added");
       await Future.delayed(const Duration(milliseconds: 500));
