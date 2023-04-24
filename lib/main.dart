@@ -1,3 +1,4 @@
+import 'package:alert_up_project/provider/app_provider.dart';
 import 'package:alert_up_project/provider/diseases_provider.dart';
 import 'package:alert_up_project/provider/location_provider.dart';
 import 'package:alert_up_project/provider/reports_provider.dart';
@@ -10,8 +11,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-
 import 'provider/user_provider.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReportsProvider()),
         ChangeNotifierProvider(create: (_) => LocationProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => AppProvider()),
       ],
       child: MaterialApp(
         title: 'AlertUp',

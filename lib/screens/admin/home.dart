@@ -1,9 +1,12 @@
+import 'package:alert_up_project/provider/app_provider.dart';
 import 'package:alert_up_project/provider/reports_provider.dart';
 import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/widgets/button.dart';
+import 'package:alert_up_project/widgets/date_filters.dart';
 import 'package:alert_up_project/widgets/icon_text.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -16,23 +19,56 @@ class AdminHome extends StatefulWidget {
 }
 
 class _AdminHomeState extends State<AdminHome> {
+  String startDate = "2022-07-01";
+  String endDate = "2022-07-30";
+
+  getStats() {
+    Provider.of<ReportsProvider>(context, listen: false).getReport(
+        dates: {
+          "startDate": DateTime.parse(startDate),
+          "endDate": DateTime.parse(endDate)
+        },
+        callback: (code, message) {
+          if (code == 200) {
+            Provider.of<ReportsProvider>(context, listen: false).getRanking(
+                dates: {
+                  "startDate": DateTime.parse(startDate),
+                  "endDate": DateTime.parse(endDate)
+                },
+                callback: (code, message) {
+                  if (code == 200) {
+                    Provider.of<ReportsProvider>(context, listen: false)
+                        .getActiveCasesCount(
+                            dates: {
+                          "startDate": DateTime.parse(startDate),
+                          "endDate": DateTime.parse(endDate)
+                        },
+                            callback: (code, message) {
+                              if (code == 200) {}
+                            });
+                  }
+                });
+          }
+        });
+  }
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ReportsProvider>(context, listen: false).getReport(
-          callback: (code, message) {
-        if (code == 200) {
-          Provider.of<ReportsProvider>(context, listen: false).getRanking(
-              callback: (code, message) {
-            if (code == 200) {
-              Provider.of<ReportsProvider>(context, listen: false)
-                  .getActiveCasesCount(callback: (code, message) {
-                if (code == 200) {}
-              });
-            }
-          });
-        }
+      DateTime now = DateTime.now();
+      setState(() {
+        startDate =
+            DateFormat("yyyy-MM-dd").format(DateTime(now.year, now.month, 1));
+        endDate = DateFormat("yyyy-MM-dd")
+            .format(DateTime(now.year, now.month + 1, 0));
       });
+
+      Provider.of<AppProvider>(context, listen: false)
+          .setStartDate(DateTime.parse(startDate));
+      Provider.of<AppProvider>(context, listen: false)
+          .setEndDate(DateTime.parse(endDate));
+
+      getStats();
     });
     super.initState();
   }
@@ -94,6 +130,14 @@ class _AdminHomeState extends State<AdminHome> {
               color: Colors.grey.withOpacity(.5),
               thickness: .5,
             ),
+            DateFilter(
+                onApplyFilter: (startDate, endDate) {
+                  this.startDate = DateFormat('yyyy-MM-dd').format(startDate);
+                  this.endDate = DateFormat('yyyy-MM-dd').format(endDate);
+                  getStats();
+                },
+                startDate: startDate,
+                endDate: endDate),
             IconText(
               label: "Reports",
               size: 20,

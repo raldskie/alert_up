@@ -40,7 +40,10 @@ class ReportsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  getReport({required Function callback}) async {
+  getReport({Map<String, DateTime>? dates, required Function callback}) async {
+    DateTime? startDate = dates?['startDate'];
+    DateTime? endDate = dates?['endDate'];
+
     setLoading("report");
     DatabaseReference classifiedZoneRef =
         FirebaseDatabase.instance.ref("alerts_zone").child("classified_zone");
@@ -95,7 +98,20 @@ class ReportsProvider extends ChangeNotifier {
     DatabaseReference userEnterRef =
         FirebaseDatabase.instance.ref("covid_tool/trigger/user_enter");
     userEnterRef.onValue.listen((event) {
-      _breakIn = event.snapshot.children.length;
+      _breakIn = event.snapshot.children
+          .where((e) {
+            DateTime? createdAt =
+                DateTime.tryParse((e.value as Map)['createdAt'].toString());
+
+            if (createdAt != null && startDate != null && endDate != null) {
+              if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+                return true;
+            }
+
+            return false;
+          })
+          .toList()
+          .length;
       setLoading("stop");
       callback(200, FETCH_SUCCESS);
     }, onError: (error) {
@@ -115,7 +131,10 @@ class ReportsProvider extends ChangeNotifier {
     });
   }
 
-  getRanking({required Function callback}) async {
+  getRanking({Map<String, DateTime>? dates, required Function callback}) async {
+    DateTime? startDate = dates?['startDate'];
+    DateTime? endDate = dates?['endDate'];
+
     setLoading("ranking");
     Query diseaseRef = FirebaseDatabase.instance
         .ref("alerts_zone/list_of_disease")
@@ -130,7 +149,15 @@ class ReportsProvider extends ChangeNotifier {
           .toList();
 
       geotaggedRef.onValue.listen((geotagged) {
-        geotagged.snapshot.children.toList().forEach((tag) {
+        geotagged.snapshot.children.where((e) {
+          DateTime? createdAt =
+              DateTime.tryParse((e.value as Map)['created_At'].toString());
+          if (createdAt != null && startDate != null && endDate != null) {
+            if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+              return true;
+          }
+          return false;
+        }).forEach((tag) {
           int index = _ranking.lastIndexWhere(
               (disease) => disease['key'] == (tag.value as Map)['diseaseKey']);
           if (index > -1) {
@@ -160,19 +187,41 @@ class ReportsProvider extends ChangeNotifier {
     });
   }
 
-  getActiveCasesCount({required Function callback}) async {
+  getActiveCasesCount(
+      {Map<String, DateTime>? dates, required Function callback}) async {
+    DateTime? startDate = dates?['startDate'];
+    DateTime? endDate = dates?['endDate'];
     setLoading("active_cases");
 
     Query geotaggedRef = FirebaseDatabase.instance.ref("geotagged_individuals");
 
     geotaggedRef.onValue.listen((event) async {
-      _activeCases = event.snapshot.children.fold(0, (previousValue, element) {
+      _activeCases = event.snapshot.children.where((e) {
+        DateTime? createdAt =
+            DateTime.tryParse((e.value as Map)['created_At'].toString());
+
+        if (createdAt != null && startDate != null && endDate != null) {
+          if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+            return true;
+        }
+
+        return false;
+      }).fold(0, (previousValue, element) {
         return (((element.value ?? {}) as Map)['status'] ?? false) == "Tagged"
             ? previousValue + 1
             : previousValue + 0;
       });
-      _inActiveCases =
-          event.snapshot.children.fold(0, (previousValue, element) {
+      _inActiveCases = event.snapshot.children.where((e) {
+        DateTime? createdAt =
+            DateTime.tryParse((e.value as Map)['created_At'].toString());
+
+        if (createdAt != null && startDate != null && endDate != null) {
+          if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+            return true;
+        }
+
+        return false;
+      }).fold(0, (previousValue, element) {
         return (((element.value ?? {}) as Map)['status'] ?? false) == "Untagged"
             ? previousValue + 1
             : previousValue + 0;
