@@ -38,11 +38,11 @@ class _AdminState extends State<Admin> with SingleTickerProviderStateMixin {
           actions: [
             Button(
               icon: Icons.summarize_rounded,
-              label: "Summary",
+              label: "Reports",
               backgroundColor: Colors.transparent,
               borderColor: Colors.transparent,
               textColor: ACCENT_COLOR,
-              onPress: () => Navigator.pushNamed(context, '/summary'),
+              onPress: () => Navigator.pushNamed(context, '/select-summary'),
             )
           ]),
       bottomNavigationBar: Material(

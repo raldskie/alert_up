@@ -1,3 +1,4 @@
+import 'package:alert_up_project/models/address_model.dart';
 import 'package:flutter/material.dart';
 
 const Color ACCENT_COLOR = Colors.red;
@@ -20,3 +21,21 @@ const String FETCH_ERROR = "An error occurred.";
 
 const USER_PLACEHOLDER_IMAGE =
     "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png?20170328184010";
+
+List<Barangay> BARANGAYS = [
+  Barangay(barangayKey: "CAS", barangay: "Casisang", purok: [
+    Purok(purokKey: "CAS-P1", purokName: "Purok 1"),
+    Purok(purokKey: "CAS-P2", purokName: "Purok 2"),
+    Purok(purokKey: "CAS-P3", purokName: "Purok 3"),
+    Purok(purokKey: "CAS-P4", purokName: "Purok 4"),
+    Purok(purokKey: "CAS-P5", purokName: "Purok 5"),
+    Purok(purokKey: "CAS-P6", purokName: "Purok 6"),
+    Purok(purokKey: "CAS-P7", purokName: "Purok 7"),
+    Purok(purokKey: "CAS-P8", purokName: "Purok 8"),
+    Purok(purokKey: "CAS-P9", purokName: "Purok 9"),
+    Purok(purokKey: "CAS-P10", purokName: "Purok 10"),
+    Purok(purokKey: "CAS-P11", purokName: "Purok 11"),
+    Purok(purokKey: "CAS-P12", purokName: "Purok 12"),
+    Purok(purokKey: "CAS-P13", purokName: "Purok 13"),
+  ])
+];

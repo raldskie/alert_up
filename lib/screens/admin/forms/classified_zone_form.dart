@@ -1,4 +1,6 @@
 import 'package:alert_up_project/provider/diseases_provider.dart';
+import 'package:alert_up_project/utilities/constants.dart';
+import 'package:alert_up_project/utilities/find_barangay.dart';
 import 'package:alert_up_project/widgets/bottom_modal.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/custom_app_bar.dart';
@@ -6,6 +8,7 @@ import 'package:alert_up_project/widgets/form/form_theme.dart';
 import 'package:alert_up_project/widgets/form/map_picker.dart';
 import 'package:alert_up_project/widgets/loading_animation.dart';
 import 'package:alert_up_project/widgets/snackbar.dart';
+import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -99,6 +102,7 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
       appBar: customAppBar(context,
           title: "${widget.mode == "EDIT" ? "Edit" : "Add"} Classified Zone",
           centerTitle: true),
+      backgroundColor: Colors.white,
       body: diseasesProvider.loading == "c_zone" ||
               diseasesProvider.loading == "disease"
           ? Center(child: PumpingAnimation())
@@ -107,15 +111,15 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
               child: Form(
                   child: Column(children: [
                 const SizedBox(height: 20),
-                TextFormField(
-                    initialValue: (payload['Purok'] ?? "").toString(),
-                    validator: (val) {
-                      if (val!.isEmpty) {
-                        return "Field required";
-                      }
-                    },
-                    onChanged: (val) => setState(() => payload['Purok'] = val),
-                    decoration: textFieldStyle(label: "Purok")),
+                // TextFormField(
+                //     initialValue: (payload['Purok'] ?? "").toString(),
+                //     validator: (val) {
+                //       if (val!.isEmpty) {
+                //         return "Field required";
+                //       }
+                //     },
+                //     onChanged: (val) => setState(() => payload['Purok'] = val),
+                //     decoration: textFieldStyle(label: "Purok")),
                 // const SizedBox(height: 15),
                 // TextFormField(
                 //     initialValue: (payload['Radius'] ?? "").toString(),
@@ -131,6 +135,54 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
                 //     keyboardType: TextInputType.number,
                 //     onChanged: (val) => setState(() => payload['Radius'] = val),
                 //     decoration: textFieldStyle(label: "Radius")),
+                DropDownTextField(
+                    initialValue: getBarangay(payload['barangayKey'])?.barangay,
+                    clearOption: true,
+                    clearIconProperty: IconProperty(color: ACCENT_COLOR),
+                    dropDownItemCount: 6,
+                    textFieldDecoration:
+                        textFieldStyle(label: "Barangay", hint: ""),
+                    dropdownRadius: 5,
+                    dropDownList: BARANGAYS.map((e) {
+                      return DropDownValueModel(
+                        value: e.barangayKey,
+                        name: e.barangay,
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        payload = {
+                          ...payload,
+                          ...getBarangay(val.value)!.toJson()
+                        };
+                      });
+                    }),
+                const SizedBox(height: 20),
+                DropDownTextField(
+                    isEnabled: payload['barangayKey'] != null,
+                    initialValue:
+                        getPurok(payload['barangayKey'], payload['purokKey'])
+                            ?.purokName,
+                    clearOption: true,
+                    clearIconProperty: IconProperty(color: ACCENT_COLOR),
+                    dropDownItemCount: 6,
+                    textFieldDecoration:
+                        textFieldStyle(label: "Purok", hint: ""),
+                    dropdownRadius: 5,
+                    dropDownList:
+                        (getBarangay(payload['barangayKey'])?.purok ?? [])
+                            .map((e) {
+                      return DropDownValueModel(
+                        value: e.purokKey,
+                        name: e.purokName,
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      payload = {
+                        ...payload,
+                        ...getPurok(payload['barangayKey'], val.value)!.toJson()
+                      };
+                    }),
                 const SizedBox(height: 15),
                 Button(
                     icon: Icons.pin_drop_rounded,

@@ -1,3 +1,4 @@
+import 'package:alert_up_project/provider/admin_provider.dart';
 import 'package:alert_up_project/provider/app_provider.dart';
 import 'package:alert_up_project/provider/diseases_provider.dart';
 import 'package:alert_up_project/provider/location_provider.dart';
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LocationProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => AppProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
       child: MaterialApp(
         title: 'AlertUp',

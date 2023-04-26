@@ -3,10 +3,11 @@ import 'package:alert_up_project/screens/admin/forms/disease_form.dart';
 import 'package:alert_up_project/screens/admin/forms/geotag_form.dart';
 import 'package:alert_up_project/screens/admin/index.dart';
 import 'package:alert_up_project/screens/admin/login_form.dart';
+import 'package:alert_up_project/screens/admin/report_geotagged.dart';
 import 'package:alert_up_project/screens/admin/scan_qr.dart';
-import 'package:alert_up_project/screens/admin/summary.dart';
+import 'package:alert_up_project/screens/admin/select_summary.dart';
+import 'package:alert_up_project/screens/admin/report_classified_zones.dart';
 import 'package:alert_up_project/screens/initialize.dart';
-import 'package:alert_up_project/screens/user/geofence.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -42,10 +43,12 @@ class RouteGenerator {
                   diseaseKey: args?['diseaseKey'] ?? "",
                   mode: args?['mode'],
                 ));
-      case '/user':
-        return MaterialPageRoute(builder: (_) => GeoFence());
-      case '/summary':
+      case '/select-summary':
+        return MaterialPageRoute(builder: (_) => SelectSummary());
+      case '/classified-zone-report':
         return MaterialPageRoute(builder: (_) => ClassifiedSummary());
+      case '/geotagged-report':
+        return MaterialPageRoute(builder: (_) => GeotaggedReport());
       case '/scan/qr':
         return MaterialPageRoute(
             builder: (_) => QRScanner(

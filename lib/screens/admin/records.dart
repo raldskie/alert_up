@@ -1,5 +1,6 @@
 import 'package:alert_up_project/screens/admin/records/classified_zones.dart';
 import 'package:alert_up_project/screens/admin/records/geotagged_individuals.dart';
+import 'package:alert_up_project/screens/admin/records/posters.dart';
 import 'package:alert_up_project/utilities/constants.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +18,7 @@ class _RecordsState extends State<Records> with SingleTickerProviderStateMixin {
   void initState() {
     _tabController = TabController(
       initialIndex: 0,
-      length: 2,
+      length: 3,
       vsync: this,
     );
     super.initState();
@@ -45,10 +46,14 @@ class _RecordsState extends State<Records> with SingleTickerProviderStateMixin {
                   icon: Icon(Icons.person_pin_rounded),
                   text: "Geotagged",
                 ),
+                Tab(
+                  icon: Icon(Icons.insert_photo_sharp),
+                  text: "Posters",
+                ),
               ])),
       body: TabBarView(
         controller: _tabController,
-        children: [ClassifiedZones(), GeoTaggedIndividuals()],
+        children: [ClassifiedZones(), GeoTaggedIndividuals(), Posters()],
       ),
     );
   }

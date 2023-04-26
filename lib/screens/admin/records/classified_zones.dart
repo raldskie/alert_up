@@ -76,12 +76,22 @@ class _ClassifiedZonesState extends State<ClassifiedZones> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
+                        "Barangay",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 17),
+                      ),
+                      Text(
+                        classifiedZone['barangay'] ?? "No data",
+                        style: const TextStyle(fontSize: 17),
+                      ),
+                      const SizedBox(height: 15),
+                      const Text(
                         "Purok",
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 17),
                       ),
                       Text(
-                        classifiedZone['Purok'] ?? "No data",
+                        classifiedZone['purokName'] ?? "No data",
                         style: const TextStyle(fontSize: 17),
                       ),
                       const SizedBox(height: 15),

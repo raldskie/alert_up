@@ -1,6 +1,7 @@
 import 'package:alert_up_project/provider/diseases_provider.dart';
 import 'package:alert_up_project/provider/location_provider.dart';
 import 'package:alert_up_project/utilities/constants.dart';
+import 'package:alert_up_project/utilities/find_barangay.dart';
 import 'package:alert_up_project/utilities/firebase_upload.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/custom_app_bar.dart';
@@ -107,6 +108,10 @@ class _GeoTagFormState extends State<GeoTagForm> {
 
     onSaveData() {
       if (widget.mode == "EDIT") {
+        if (payload['status'] == "Untagged" && payload['untagDate'] == null) {
+          payload['untagDate'] = DateTime.now().toLocal().toIso8601String();
+        }
+
         diseasesProvider.updateGeotag(
             key: diseasesProvider.geoTaggedIndividual!.key!,
             payload: payload,
@@ -213,7 +218,16 @@ class _GeoTagFormState extends State<GeoTagForm> {
                       const SizedBox(width: 5),
                       const Text("Is Confidential?")
                     ]),
-                    const SizedBox(height: 15),
+                    Row(children: [
+                      Checkbox(
+                          value: payload['isContagious'] ?? false,
+                          onChanged: (val) => setState(() {
+                                payload['isContagious'] = val;
+                              })),
+                      const SizedBox(width: 5),
+                      const Text("Is Contagious/Infectious?")
+                    ]),
+                    const SizedBox(height: 25),
                     if (diseasesProvider.loading == "disease_list")
                       IconText(isLoading: true, label: "Getting disease")
                     else
@@ -242,7 +256,7 @@ class _GeoTagFormState extends State<GeoTagForm> {
                               "diseaseName": val.name
                             };
                           }),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 20),
                     TextFormField(
                         initialValue: (payload['name'] ?? "").toString(),
                         validator: (val) {
@@ -252,32 +266,10 @@ class _GeoTagFormState extends State<GeoTagForm> {
                         },
                         onChanged: (val) =>
                             setState(() => payload['name'] = val),
-                        decoration: textFieldStyle(label: "Full Name")),
-                    const SizedBox(height: 15),
+                        decoration: textFieldStyle(label: "Age")),
+                    const SizedBox(height: 20),
                     TextFormField(
-                        initialValue: (payload['purok'] ?? "").toString(),
-                        validator: (val) {
-                          if (val!.isEmpty) {
-                            return "Field required";
-                          }
-                        },
-                        onChanged: (val) =>
-                            setState(() => payload['purok'] = val),
-                        decoration: textFieldStyle(label: "Purok")),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                        initialValue: (payload['barangay'] ?? "").toString(),
-                        validator: (val) {
-                          if (val!.isEmpty) {
-                            return "Field required";
-                          }
-                        },
-                        onChanged: (val) =>
-                            setState(() => payload['barangay'] = val),
-                        decoration: textFieldStyle(label: "Barangay")),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                        initialValue: (payload['contact'] ?? "").toString(),
+                        initialValue: (payload['age'] ?? "").toString(),
                         validator: (val) {
                           if (val!.isEmpty) {
                             return "Field required";
@@ -285,10 +277,94 @@ class _GeoTagFormState extends State<GeoTagForm> {
                         },
                         keyboardType: TextInputType.number,
                         onChanged: (val) =>
-                            setState(() => payload['contact'] = val),
-                        maxLength: 10,
-                        decoration: textFieldStyle(
-                            label: "Contact No.", prefix: "+63")),
+                            setState(() => payload['age'] = val),
+                        decoration: textFieldStyle(label: "Age")),
+                    const SizedBox(height: 20),
+                    // TextFormField(
+                    //     initialValue: (payload['purok'] ?? "").toString(),
+                    //     validator: (val) {
+                    //       if (val!.isEmpty) {
+                    //         return "Field required";
+                    //       }
+                    //     },
+                    //     onChanged: (val) =>
+                    //         setState(() => payload['purok'] = val),
+                    //     decoration: textFieldStyle(label: "Purok")),
+                    DropDownTextField(
+                        initialValue:
+                            getBarangay(payload['barangayKey'])?.barangay,
+                        clearOption: true,
+                        clearIconProperty: IconProperty(color: ACCENT_COLOR),
+                        dropDownItemCount: 6,
+                        textFieldDecoration:
+                            textFieldStyle(label: "Barangay", hint: ""),
+                        dropdownRadius: 5,
+                        dropDownList: BARANGAYS.map((e) {
+                          return DropDownValueModel(
+                            value: e.barangayKey,
+                            name: e.barangay,
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            payload = {
+                              ...payload,
+                              ...getBarangay(val.value)!.toJson()
+                            };
+                          });
+                        }),
+                    const SizedBox(height: 20),
+                    DropDownTextField(
+                        isEnabled: payload['barangayKey'] != null,
+                        initialValue: getPurok(
+                                payload['barangayKey'], payload['purokKey'])
+                            ?.purokName,
+                        clearOption: true,
+                        clearIconProperty: IconProperty(color: ACCENT_COLOR),
+                        dropDownItemCount: 6,
+                        textFieldDecoration:
+                            textFieldStyle(label: "Purok", hint: ""),
+                        dropdownRadius: 5,
+                        dropDownList:
+                            (getBarangay(payload['barangayKey'])?.purok ?? [])
+                                .map((e) {
+                          return DropDownValueModel(
+                            value: e.purokKey,
+                            name: e.purokName,
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          payload = {
+                            ...payload,
+                            ...getPurok(payload['barangayKey'], val.value)!
+                                .toJson()
+                          };
+                        }),
+                    const SizedBox(height: 15),
+                    // TextFormField(
+                    //     initialValue: (payload['barangay'] ?? "").toString(),
+                    //     validator: (val) {
+                    //       if (val!.isEmpty) {
+                    //         return "Field required";
+                    //       }
+                    //     },
+                    //     onChanged: (val) =>
+                    //         setState(() => payload['barangay'] = val),
+                    //     decoration: textFieldStyle(label: "Barangay")),
+                    // const SizedBox(height: 15),
+                    // TextFormField(
+                    //     initialValue: (payload['contact'] ?? "").toString(),
+                    //     validator: (val) {
+                    //       if (val!.isEmpty) {
+                    //         return "Field required";
+                    //       }
+                    //     },
+                    //     keyboardType: TextInputType.number,
+                    //     onChanged: (val) =>
+                    //         setState(() => payload['contact'] = val),
+                    //     maxLength: 10,
+                    //     decoration: textFieldStyle(
+                    //         label: "Contact No.", prefix: "+63")),
                     IconText(
                       label: "Gender",
                       fontWeight: FontWeight.bold,
@@ -321,6 +397,7 @@ class _GeoTagFormState extends State<GeoTagForm> {
                         groupValue: payload['status'],
                         onChanged: (value) => setState(() {
                               payload['status'] = value;
+                              payload['untagDate'] = null;
                             })),
                     RadioListTile<String>(
                         contentPadding: EdgeInsets.zero,
@@ -348,7 +425,8 @@ class _GeoTagFormState extends State<GeoTagForm> {
                             isUploadingImage = true;
                           });
 
-                          String? imageLink = await uploadFile(selectedImage);
+                          String? imageLink = await uploadFile(
+                              file: selectedImage!, folder: "geo_tags");
                           if (imageLink != null) {
                             payload['imageUrl'] = imageLink;
                             onSaveData();

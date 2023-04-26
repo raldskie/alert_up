@@ -100,7 +100,16 @@ class _ViewClassifiedZoneState extends State<ViewClassifiedZone> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
               ),
               Text(
-                getValue()?['Purok'] ?? "No data",
+                getValue()?['purokName'] ?? "No data",
+                style: const TextStyle(fontSize: 17),
+              ),
+              const SizedBox(height: 15),
+              const Text(
+                "Barangay",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+              ),
+              Text(
+                getValue()?['barangay'] ?? "No data",
                 style: const TextStyle(fontSize: 17),
               ),
               const SizedBox(height: 15),
