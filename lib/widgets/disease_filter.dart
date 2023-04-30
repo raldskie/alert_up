@@ -18,7 +18,8 @@ class DiseaseFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(children: [
-      Text("Purok Ranking by Disease"),
+      Text("Purok Ranking by Disease",
+          style: TextStyle(fontWeight: FontWeight.bold)),
       Expanded(child: Container()),
       DropdownButton2<String>(
           value: diseaseKey, // getBarangay()?.barangay,
@@ -38,7 +39,10 @@ class DiseaseFilter extends StatelessWidget {
           items: diseases.map((e) {
             return DropdownMenuItem<String>(
               value: e.key,
-              child: Text((e.value as Map)['disease_name']),
+              child: Text(
+                (e.value as Map)['disease_name'],
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
             );
           }).toList())
     ]);

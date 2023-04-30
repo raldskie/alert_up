@@ -1,18 +1,12 @@
 import 'package:alert_up_project/provider/diseases_provider.dart';
 import 'package:alert_up_project/provider/reports_provider.dart';
 import 'package:alert_up_project/utilities/constants.dart';
-import 'package:alert_up_project/utilities/find_barangay.dart';
-import 'package:alert_up_project/utilities/generate_pdf.dart';
 import 'package:alert_up_project/widgets/barangay_filter.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/custom_app_bar.dart';
 import 'package:alert_up_project/widgets/date_filters.dart';
-import 'package:alert_up_project/widgets/disease_filter.dart';
-import 'package:alert_up_project/widgets/icon_text.dart';
 import 'package:alert_up_project/widgets/purok_filter.dart';
-import 'package:alert_up_project/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 
@@ -25,7 +19,6 @@ class GeofenceDiseaseRanking extends StatefulWidget {
 
 class _GeofenceDiseaseRankingState extends State<GeofenceDiseaseRanking> {
   Map query = {};
-  Map purokRankingFilter = {};
 
   getClassifiedZones() {
     Provider.of<DiseasesProvider>(context, listen: false)
@@ -72,12 +65,12 @@ class _GeofenceDiseaseRankingState extends State<GeofenceDiseaseRanking> {
                 setState(() {
                   isGeneratingPDF = true;
                 });
-                await generatePDF(context,
-                    classifiedZones: diseasesProvider.classifiedZones
-                        .map((e) => e.value is Map ? e.value as Map : null)
-                        .toList()
-                        .where((element) => element != null)
-                        .toList());
+                // await generatePDF(context,
+                //     classifiedZones: diseasesProvider.classifiedZones
+                //         .map((e) => e.value is Map ? e.value as Map : null)
+                //         .toList()
+                //         .where((element) => element != null)
+                //         .toList());
                 setState(() {
                   isGeneratingPDF = false;
                 });
@@ -87,19 +80,24 @@ class _GeofenceDiseaseRankingState extends State<GeofenceDiseaseRanking> {
             ? const Center(child: CircularProgressIndicator())
             : Column(
                 children: [
+                  const SizedBox(height: 10),
                   Container(
                       color: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 15),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
                       child: BarangayFilter(
                           barangayKey: query['barangayKey'],
                           onChange: (value) {
                             setState(() {
-                              query = {...query, "barangayKey": value};
+                              query = {
+                                ...query,
+                                "barangayKey": value,
+                                "purokKey": null
+                              };
                             });
                             getClassifiedZones();
                             getRanking();
                           })),
+                  const Divider(),
                   Container(
                       color: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -110,21 +108,18 @@ class _GeofenceDiseaseRankingState extends State<GeofenceDiseaseRanking> {
                               (DateTime startDate, DateTime endDate) {
                             setState(() {
                               query['createdAt'] = [startDate, endDate];
-                              purokRankingFilter['createdAt'] = [
-                                startDate,
-                                endDate
-                              ];
                             });
                             getClassifiedZones();
                             getRanking();
                           },
                           startDate: "",
                           endDate: "")),
+                  const Divider(),
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
                       child: Padding(
-                        padding: const EdgeInsets.all(15),
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -173,63 +168,75 @@ class _GeofenceDiseaseRankingState extends State<GeofenceDiseaseRanking> {
                                     ]),
                               );
                             }),
+                            const SizedBox(height: 15),
+                            const Divider(),
+                            Text("Geofence Purok List"),
+                            const SizedBox(height: 10),
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
-                              child:
-                                  DataTable(dataRowHeight: 100, columns: const [
-                                DataColumn(
-                                  label: Text('Purok'),
-                                ),
-                                DataColumn(
-                                  label: Text('Disease Name'),
-                                ),
-                                DataColumn(
-                                  label: Text('Barangay'),
-                                ),
-                                DataColumn(
-                                  label: Text('Alert Message'),
-                                ),
-                                DataColumn(
-                                  label: Text('Description'),
-                                ),
-                                // DataColumn(
-                                //   label: Text('Actions'),
-                                // ),
-                              ], rows: [
-                                ...diseasesProvider.classifiedZones
-                                    .map((value) {
-                                  if (value.value is Map) {
-                                    Map classifiedZone = value.value as Map;
+                              child: DataTable(
+                                  dataRowHeight: 100,
+                                  border: TableBorder.all(
+                                      width: 1, color: Colors.grey),
+                                  columns: const [
+                                    DataColumn(
+                                      label: Text('Disease Name'),
+                                    ),
+                                    DataColumn(
+                                      label: Text('Purok'),
+                                    ),
+                                    DataColumn(
+                                      label: Text('Barangay'),
+                                    ),
+                                    DataColumn(
+                                      label: Text('Alert Message'),
+                                    ),
+                                    DataColumn(
+                                      label: Text('Description'),
+                                    ),
+                                    // DataColumn(
+                                    //   label: Text('Actions'),
+                                    // ),
+                                  ],
+                                  rows: [
+                                    ...diseasesProvider.classifiedZones
+                                        .map((value) {
+                                      if (value.value is Map) {
+                                        Map classifiedZone = value.value as Map;
 
-                                    return DataRow(cells: [
-                                      DataCell(Text(
-                                          classifiedZone['purokName'] ?? "")),
-                                      DataCell(
-                                          Text(classifiedZone['Geo_Name'])),
-                                      DataCell(Text(
-                                          classifiedZone['barangay'] ?? "")),
-                                      DataCell(SizedBox(
-                                          width: 200,
-                                          child: Text(classifiedZone[
-                                              'alert_message']))),
-                                      DataCell(SizedBox(
-                                          width: 200,
-                                          child: Text(
-                                              classifiedZone['Description']))),
-                                      // DataCell(Button(label: "Show On Map")),
-                                    ]);
-                                  }
-                                  return DataRow(cells: [
-                                    DataCell(Text("No Data")),
-                                    DataCell(Text("No Data")),
-                                    DataCell(SizedBox(
-                                        width: 200, child: Text("No Data"))),
-                                    DataCell(SizedBox(
-                                        width: 200, child: Text("No Data"))),
-                                    // DataCell(Button(label: "Show On Map")),
-                                  ]);
-                                })
-                              ]),
+                                        return DataRow(cells: [
+                                          DataCell(
+                                              Text(classifiedZone['Geo_Name'])),
+                                          DataCell(Text(
+                                              classifiedZone['purokName'] ??
+                                                  "")),
+                                          DataCell(Text(
+                                              classifiedZone['barangay'] ??
+                                                  "")),
+                                          DataCell(SizedBox(
+                                              width: 200,
+                                              child: Text(classifiedZone[
+                                                  'alert_message']))),
+                                          DataCell(SizedBox(
+                                              width: 200,
+                                              child: Text(classifiedZone[
+                                                  'Description']))),
+                                          // DataCell(Button(label: "Show On Map")),
+                                        ]);
+                                      }
+                                      return DataRow(cells: [
+                                        DataCell(Text("No Data")),
+                                        DataCell(Text("No Data")),
+                                        DataCell(SizedBox(
+                                            width: 200,
+                                            child: Text("No Data"))),
+                                        DataCell(SizedBox(
+                                            width: 200,
+                                            child: Text("No Data"))),
+                                        // DataCell(Button(label: "Show On Map")),
+                                      ]);
+                                    })
+                                  ]),
                             ),
                           ],
                         ),

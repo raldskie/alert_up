@@ -1,21 +1,23 @@
 import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/utilities/find_barangay.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
-class BarangayFilter extends StatelessWidget {
-  final String? barangayKey;
+class WeatherFilter extends StatelessWidget {
+  final String? weatherKey;
   final Function(String?) onChange;
-  const BarangayFilter({Key? key, required this.onChange, this.barangayKey})
+  const WeatherFilter(
+      {Key? key, required this.weatherKey, required this.onChange})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Row(children: [
-      Text("Barangay"),
+      Text("Select weather"),
       Expanded(child: Container()),
       DropdownButton2<String>(
-          value: barangayKey, // getBarangay()?.barangay,
+          value: weatherKey,
           underline: Container(
             color: Colors.grey[100],
             height: 0,
@@ -27,18 +29,17 @@ class BarangayFilter extends StatelessWidget {
           )),
           // dropdownStyleData: DropdownStyleData(width: 30),
           onChanged: (String? e) => onChange(e),
-          hint: Text("Select Barangay",
+          hint: Text("Select weather",
               style: TextStyle(color: Colors.grey, fontSize: 14)),
-          items: BARANGAYS
-              .map((e) => DropdownMenuItem<String>(
-                    value: e.barangayKey,
-                    child: Text(
-                      e.barangay,
-                      style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
-                  ))
-              .toList())
+          items: WEATHERS.map((e) {
+            return DropdownMenuItem<String>(
+              value: e.weatherKey,
+              child: Text(
+                e.weatherName,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+            );
+          }).toList())
     ]);
   }
 }

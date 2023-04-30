@@ -1,5 +1,4 @@
 import 'package:alert_up_project/provider/diseases_provider.dart';
-import 'package:alert_up_project/provider/reports_provider.dart';
 import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/utilities/debouncer.dart';
 import 'package:alert_up_project/widgets/accordion.dart';
@@ -8,6 +7,7 @@ import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/custom_app_bar.dart';
 import 'package:alert_up_project/widgets/date_filters.dart';
 import 'package:alert_up_project/widgets/search_bar.dart';
+import 'package:alert_up_project/widgets/weather_filter.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -52,15 +52,24 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
               backgroundColor: Colors.transparent,
               borderColor: Colors.transparent,
               textColor: ACCENT_COLOR,
-              onPress: () async {})
+              onPress: () async {
+                Map temp = {
+                  "barangay": "",
+                  "ageRange": "",
+                  "dateTagged": "",
+                  "dateUntagged": "",
+                  "title": "",
+                  "purpose": "",
+                };
+              })
         ]),
         backgroundColor: Colors.white,
         body: Column(
           children: [
+            const SizedBox(height: 5),
             Container(
                 color: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: BarangayFilter(
                     barangayKey: query['barangayKey'],
                     onChange: (value) {
@@ -69,19 +78,19 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                       });
                       getGeotagged();
                     })),
+            const Divider(),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: Column(
                   children: [
-                    const Divider(),
                     Accordion(
                         titleIcon: Icons.filter_alt,
                         title: "Filters",
                         content: Container(
                           color: ACCENT_COLOR.withOpacity(.05),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 25),
+                              horizontal: 15, vertical: 25),
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -110,7 +119,7 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                                       ? query['age']
                                       : RangeValues(0, 100),
                                   max: 100,
-                                  divisions: 10,
+                                  divisions: 100,
                                   onChanged: (RangeValues values) {
                                     setState(() {
                                       query['age'] = values;
@@ -120,6 +129,16 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                                     });
                                   },
                                 ),
+                                const SizedBox(height: 20),
+                                Text("Current weather when recorded",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                WeatherFilter(
+                                    weatherKey: query['weatherKey'],
+                                    onChange: (value) {
+                                      query['weatherKey'] = value;
+                                      getGeotagged();
+                                    }),
                                 const SizedBox(height: 20),
                                 Text("Date Tagged",
                                     style:
@@ -277,6 +296,9 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                                           ))
                                       .toList())),
                           DataColumn(
+                            label: Text('Current Weather'),
+                          ),
+                          DataColumn(
                             label: Text('Date Tagged'),
                           ),
                           DataColumn(
@@ -304,6 +326,10 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                                         (geotagged['isContagious'] ?? false)
                                             ? "Yes"
                                             : "No"))),
+                                DataCell(SizedBox(
+                                    width: 200,
+                                    child:
+                                        Text(geotagged['weatherName'] ?? ""))),
                                 DataCell(SizedBox(
                                     width: 200,
                                     child: Text(geotagged['created_At'] != null

@@ -328,6 +328,11 @@ class DiseasesProvider extends ChangeNotifier {
             trueCount += 1;
           }
 
+          if (filters['weatherKey'] != null &&
+              filters['weatherKey'] == value['weatherKey']) {
+            trueCount += 1;
+          }
+
           if (filters['gender'] != null &&
               filters['gender'] == value['gender']) {
             trueCount += 1;

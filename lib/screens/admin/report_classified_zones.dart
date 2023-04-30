@@ -2,7 +2,6 @@ import 'package:alert_up_project/provider/diseases_provider.dart';
 import 'package:alert_up_project/provider/reports_provider.dart';
 import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/utilities/find_barangay.dart';
-import 'package:alert_up_project/utilities/generate_pdf.dart';
 import 'package:alert_up_project/widgets/barangay_filter.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/custom_app_bar.dart';
@@ -81,12 +80,12 @@ class _ClassifiedSummaryState extends State<ClassifiedSummary> {
                 setState(() {
                   isGeneratingPDF = true;
                 });
-                await generatePDF(context,
-                    classifiedZones: diseasesProvider.classifiedZones
-                        .map((e) => e.value is Map ? e.value as Map : null)
-                        .toList()
-                        .where((element) => element != null)
-                        .toList());
+                // await generatePDF(context,
+                //     classifiedZones: diseasesProvider.classifiedZones
+                //         .map((e) => e.value is Map ? e.value as Map : null)
+                //         .toList()
+                //         .where((element) => element != null)
+                //         .toList());
                 setState(() {
                   isGeneratingPDF = false;
                 });

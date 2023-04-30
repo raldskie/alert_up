@@ -16,13 +16,23 @@ class _SelectSummaryState extends State<SelectSummary> {
     return Scaffold(
       appBar: customAppBar(context, title: "Reports", centerTitle: true),
       backgroundColor: Colors.white,
-      body: Padding(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color.fromARGB(255, 234, 29, 29),
+              Color.fromARGB(255, 239, 93, 25),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         padding: const EdgeInsets.all(15),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Button(
             label: "Geofence | Purok Ranking",
             padding: const EdgeInsets.symmetric(vertical: 80),
-            backgroundColor: Colors.transparent,
+            backgroundColor: Colors.white,
             textColor: ACCENT_COLOR,
             borderRadius: 10,
             onPress: () {
@@ -34,7 +44,7 @@ class _SelectSummaryState extends State<SelectSummary> {
           Button(
             label: "Geofence | Disease Ranking",
             padding: const EdgeInsets.symmetric(vertical: 80),
-            backgroundColor: Colors.transparent,
+            backgroundColor: Colors.white,
             textColor: ACCENT_COLOR,
             borderRadius: 10,
             onPress: () {
@@ -46,7 +56,7 @@ class _SelectSummaryState extends State<SelectSummary> {
           Button(
             label: "Geotagging",
             padding: const EdgeInsets.symmetric(vertical: 80),
-            backgroundColor: Colors.transparent,
+            backgroundColor: Colors.white,
             textColor: ACCENT_COLOR,
             borderRadius: 10,
             onPress: () {

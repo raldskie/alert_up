@@ -9,30 +9,60 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
-Future<bool?> generatePDF(BuildContext context,
-    {required List classifiedZones}) async {
+Future<bool?> generatePurokRankingPDF(BuildContext context,
+    {required Map reportDescription,
+    required List<Map> purokRanking,
+    required List classifiedZones}) async {
   //Create a new PDF document
   PdfDocument document = PdfDocument();
 
-//Create a PdfGrid class
+  final PdfTextElement textElement = PdfTextElement(
+      text:
+          "${reportDescription['title']}\n\n${reportDescription['description']}\n\n\nBarangay: ${reportDescription['barangayName']} | Filtered by: ${reportDescription['dateFilterType']} | ${reportDescription['dates']} | Ranked by ${reportDescription['diseaseNameFilter']}",
+      font: PdfStandardFont(PdfFontFamily.helvetica, 12));
+
+  final PdfPage page = document.pages.add();
+
+  textElement.draw(
+      page: document.pages[0],
+      bounds: Rect.fromLTWH(
+          0, 50, page.getClientSize().width, page.getClientSize().height),
+      format: PdfLayoutFormat(layoutType: PdfLayoutType.paginate));
+
+  PdfGrid rankingGrid = PdfGrid();
+  rankingGrid.columns.add(count: 3);
+  rankingGrid.headers.add(1);
+
+  PdfGridRow rankingHeader = rankingGrid.headers[0];
+  rankingHeader.cells[0].value = 'Rank';
+  rankingHeader.cells[1].value = 'Purok';
+  rankingHeader.cells[2].value = 'Disease Count';
+
+  List.generate(purokRanking.length, (index) {
+    PdfGridRow row = rankingGrid.rows.add();
+    row.cells[0].value = (index + 1).toString();
+    row.cells[1].value = purokRanking[index]['purokName'];
+    row.cells[2].value = (purokRanking[index]['geotagged'].length).toString();
+  });
+
+  rankingGrid.style = PdfGridStyle(
+      cellPadding: PdfPaddings(left: 2, right: 3, top: 4, bottom: 5),
+      backgroundBrush: PdfBrushes.wheat,
+      textBrush: PdfBrushes.black,
+      font: PdfStandardFont(PdfFontFamily.timesRoman, 25));
+  rankingGrid.draw(
+      page: document.pages.add(), bounds: const Rect.fromLTWH(0, 0, 0, 0));
+
   PdfGrid grid = PdfGrid();
-
-//Add the columns to the grid
   grid.columns.add(count: 4);
-
-//Add header to the grid
   grid.headers.add(1);
-
   document.pageSettings.orientation = PdfPageOrientation.landscape;
 
-//Add the rows to the grid
   PdfGridRow header = grid.headers[0];
   header.cells[0].value = 'Disease Name';
   header.cells[1].value = 'Purok';
   header.cells[2].value = 'Alert Message';
   header.cells[3].value = 'Description';
-
-//Add rows to grid
 
   List.generate(classifiedZones.length, (index) {
     PdfGridRow row = grid.rows.add();
@@ -42,14 +72,12 @@ Future<bool?> generatePDF(BuildContext context,
     row.cells[3].value = classifiedZones[index]['Description'] ?? "";
   });
 
-//Set the grid style
   grid.style = PdfGridStyle(
       cellPadding: PdfPaddings(left: 2, right: 3, top: 4, bottom: 5),
       backgroundBrush: PdfBrushes.wheat,
       textBrush: PdfBrushes.black,
       font: PdfStandardFont(PdfFontFamily.timesRoman, 25));
 
-//Draw the grid
   grid.draw(
       page: document.pages.add(), bounds: const Rect.fromLTWH(0, 0, 0, 0));
 

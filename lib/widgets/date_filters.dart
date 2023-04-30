@@ -60,7 +60,7 @@ class DateFilter extends StatelessWidget {
         margin: EdgeInsets.all(margin ?? 0),
         color: backgroundColor ?? Colors.white,
         child: Padding(
-          padding:  EdgeInsets.symmetric(vertical: padding?.toDouble() ?? 15),
+          padding: EdgeInsets.symmetric(vertical: padding?.toDouble() ?? 15),
           child: Row(children: [
             Expanded(
               child: DropdownButton2<String>(
@@ -98,7 +98,10 @@ class DateFilter extends StatelessWidget {
                   items: const ["Weekly", "Monthly", "Quarterly", "Yearly"]
                       .map((e) => DropdownMenuItem<String>(
                             value: e,
-                            child: Text(e),
+                            child: Text(
+                              e,
+                              style: TextStyle(fontSize: 14),
+                            ),
                           ))
                       .toList()),
             ),
