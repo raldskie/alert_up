@@ -217,6 +217,30 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
                 const SizedBox(height: 10),
                 const Divider(),
                 const SizedBox(height: 10),
+                DropDownTextField(
+                    initialValue:
+                        getWeather(payload['weatherKey'])?.weatherName,
+                    clearOption: true,
+                    clearIconProperty: IconProperty(color: ACCENT_COLOR),
+                    dropDownItemCount: 6,
+                    textFieldDecoration:
+                        textFieldStyle(label: "Current weather", hint: ""),
+                    dropdownRadius: 5,
+                    dropDownList: WEATHERS.map((e) {
+                      return DropDownValueModel(
+                        value: e.weatherKey,
+                        name: e.weatherName,
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        payload = {
+                          ...payload,
+                          ...getWeather(val.value)!.toJson(),
+                        };
+                      });
+                    }),
+                const SizedBox(height: 20),
                 TextFormField(
                     initialValue: payload['Geo_Name'],
                     validator: (val) {

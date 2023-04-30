@@ -181,6 +181,9 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                             label: Text('Name'),
                           ),
                           DataColumn(
+                            label: Text('Barangay'),
+                          ),
+                          DataColumn(
                             label: Text('Age'),
                           ),
                           DataColumn(
@@ -286,6 +289,7 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
 
                               return DataRow(cells: [
                                 DataCell(Text(geotagged['name'] ?? "")),
+                                DataCell(Text(geotagged['barangay'] ?? "")),
                                 DataCell(Text(geotagged['age'] ?? "")),
                                 DataCell(SizedBox(
                                     width: 200,

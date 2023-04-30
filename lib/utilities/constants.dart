@@ -1,4 +1,5 @@
 import 'package:alert_up_project/models/address_model.dart';
+import 'package:alert_up_project/models/weather_model.dart';
 import 'package:flutter/material.dart';
 
 const Color ACCENT_COLOR = Colors.red;
@@ -42,4 +43,9 @@ List<Barangay> BARANGAYS = [
     Purok(purokKey: "AGL-P1", purokName: "Purok 1"),
     Purok(purokKey: "AGL-P2", purokName: "Purok 2"),
   ])
+];
+
+List<Weather> WEATHERS = [
+  Weather(weatherKey: "SUNNY", weatherName: "Sunny"),
+  Weather(weatherKey: "RAINY", weatherName: "Rainy"),
 ];

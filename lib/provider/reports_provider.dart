@@ -190,9 +190,17 @@ class ReportsProvider extends ChangeNotifier {
             trueCount += 1;
           }
 
-          print(filters['dates']);
-          print(activeFilters);
-          print(trueCount);
+          if (filters['createdAt'] != null) {
+            DateTime? createdAt =
+                DateTime.tryParse(value['created_At'].toString());
+            DateTime? startDate = filters['createdAt'][0];
+            DateTime? endDate = filters['createdAt'][1];
+
+            if (createdAt != null && startDate != null && endDate != null) {
+              if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+                trueCount += 1;
+            }
+          }
 
           return activeFilters == trueCount;
         }).forEach((tag) {
@@ -231,9 +239,6 @@ class ReportsProvider extends ChangeNotifier {
       required Function callback}) async {
     setLoading("ranking");
 
-    // Query diseaseRef = FirebaseDatabase.instance
-    //     .ref("alerts_zone/list_of_disease")
-    //     .orderByChild("disease_name");
     Query geotaggedRef = FirebaseDatabase.instance.ref("geotagged_individuals");
 
     geotaggedRef.onValue.listen((event) async {
@@ -247,7 +252,6 @@ class ReportsProvider extends ChangeNotifier {
 
       List<DataSnapshot> geotags = event.snapshot.children.toList();
 
-      //insert pa dayun filter here
       geotags.where((element) {
         var value = element.value as Map;
 
@@ -262,6 +266,22 @@ class ReportsProvider extends ChangeNotifier {
         if (filters['diseaseKey'] != null &&
             filters['diseaseKey'] == value['diseaseKey']) {
           trueCount += 1;
+        }
+
+        if (filters['barangayKey'] != null &&
+            filters['barangayKey'] == value['barangayKey']) {
+          trueCount += 1;
+        }
+
+        if (filters['createdAt'] != null) {
+          DateTime? createdAt =
+              DateTime.tryParse(value['created_At'].toString());
+          DateTime? startDate = filters['createdAt'][0];
+          DateTime? endDate = filters['createdAt'][1];
+          if (createdAt != null && startDate != null && endDate != null) {
+            if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+              trueCount += 1;
+          }
         }
 
         return activeFilters == trueCount;

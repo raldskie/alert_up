@@ -20,13 +20,25 @@ class _SelectSummaryState extends State<SelectSummary> {
         padding: const EdgeInsets.all(15),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Button(
-            label: "Geofence",
+            label: "Geofence | Purok Ranking",
             padding: const EdgeInsets.symmetric(vertical: 80),
             backgroundColor: Colors.transparent,
             textColor: ACCENT_COLOR,
             borderRadius: 10,
             onPress: () {
-              Navigator.pushNamed(context, "/classified-zone-report",
+              Navigator.pushNamed(context, "/geofence/purok-ranking",
+                  arguments: {"mode": "Geofence"});
+            },
+          ),
+          const SizedBox(height: 15),
+          Button(
+            label: "Geofence | Disease Ranking",
+            padding: const EdgeInsets.symmetric(vertical: 80),
+            backgroundColor: Colors.transparent,
+            textColor: ACCENT_COLOR,
+            borderRadius: 10,
+            onPress: () {
+              Navigator.pushNamed(context, "/geofence/disease-ranking",
                   arguments: {"mode": "Geofence"});
             },
           ),

@@ -355,31 +355,31 @@ class _GeoTagFormState extends State<GeoTagForm> {
                                 .toJson()
                           };
                         }),
-                    const SizedBox(height: 15),
-                    // TextFormField(
-                    //     initialValue: (payload['barangay'] ?? "").toString(),
-                    //     validator: (val) {
-                    //       if (val!.isEmpty) {
-                    //         return "Field required";
-                    //       }
-                    //     },
-                    //     onChanged: (val) =>
-                    //         setState(() => payload['barangay'] = val),
-                    //     decoration: textFieldStyle(label: "Barangay")),
-                    // const SizedBox(height: 15),
-                    // TextFormField(
-                    //     initialValue: (payload['contact'] ?? "").toString(),
-                    //     validator: (val) {
-                    //       if (val!.isEmpty) {
-                    //         return "Field required";
-                    //       }
-                    //     },
-                    //     keyboardType: TextInputType.number,
-                    //     onChanged: (val) =>
-                    //         setState(() => payload['contact'] = val),
-                    //     maxLength: 10,
-                    //     decoration: textFieldStyle(
-                    //         label: "Contact No.", prefix: "+63")),
+                    const SizedBox(height: 20),
+                    DropDownTextField(
+                        initialValue:
+                            getWeather(payload['weatherKey'])?.weatherName,
+                        clearOption: true,
+                        clearIconProperty: IconProperty(color: ACCENT_COLOR),
+                        dropDownItemCount: 6,
+                        textFieldDecoration:
+                            textFieldStyle(label: "Current weather", hint: ""),
+                        dropdownRadius: 5,
+                        dropDownList: WEATHERS.map((e) {
+                          return DropDownValueModel(
+                            value: e.weatherKey,
+                            name: e.weatherName,
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            payload = {
+                              ...payload,
+                              ...getWeather(val.value)!.toJson(),
+                            };
+                          });
+                        }),
+                    const SizedBox(height: 20),
                     IconText(
                       label: "Gender",
                       fontWeight: FontWeight.bold,

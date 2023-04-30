@@ -160,6 +160,18 @@ class DiseasesProvider extends ChangeNotifier {
             trueCount += 1;
           }
 
+          if (filters['createdAt'] != null) {
+            DateTime? createdAt =
+                DateTime.tryParse(value['createdAt'].toString());
+            DateTime? startDate = filters['createdAt'][0];
+            DateTime? endDate = filters['createdAt'][1];
+
+            if (createdAt != null && startDate != null && endDate != null) {
+              if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+                trueCount += 1;
+            }
+          }
+
           return activeFilters == trueCount;
         }).toList();
       } else {
