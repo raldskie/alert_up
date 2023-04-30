@@ -1,4 +1,5 @@
 import 'package:alert_up_project/provider/app_provider.dart';
+import 'package:alert_up_project/provider/date_filter_b_provider.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/icon_text.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -6,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class DateFilter extends StatelessWidget {
+class DateFilterB extends StatelessWidget {
   Function onApplyFilter;
   String startDate; //YYYY-MM-DD
   String? endDate; //YYYY-MM-DD
@@ -14,7 +15,7 @@ class DateFilter extends StatelessWidget {
   int? padding;
   bool? compactMode;
   Color? backgroundColor;
-  DateFilter(
+  DateFilterB(
       {Key? key,
       required this.onApplyFilter,
       required this.startDate,
@@ -53,7 +54,7 @@ class DateFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AppProvider appProvider = context.watch<AppProvider>();
+    DateFilterBProvider appProvider = context.watch<DateFilterBProvider>();
     double width = MediaQuery.of(context).size.width;
 
     return Container(
@@ -115,6 +116,7 @@ class DateFilter extends StatelessWidget {
                         .format(DateTime(0, appProvider.MONTH_SELECTED[0])),
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
+                    size: 15,
                     icon: Icons.arrow_drop_down_rounded,
                   ),
                   itemBuilder: (context) => [
@@ -158,20 +160,16 @@ class DateFilter extends StatelessWidget {
                     label: appProvider.WEEK_SELECTED[1],
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
+                    size: 15,
                     icon: Icons.arrow_drop_down_rounded,
                   ),
                   itemBuilder: (context) => [
                     const PopupMenuItem(
-                        value: [1, "Wk 1"],
-                        child: Text(
-                          "Wk 1",
-                          style: TextStyle(fontSize: 14),
-                        )),
+                        value: [1, "Wk 1"], child: Text("Wk 1")),
                     const PopupMenuItem(
                         value: [2, "Wk 2"], child: Text("Wk 2")),
                     const PopupMenuItem(
-                        value: [3, "Wk 3"],
-                        child: Text("Wk 3", style: TextStyle(fontSize: 14))),
+                        value: [3, "Wk 3"], child: Text("Wk 3")),
                     const PopupMenuItem(
                         value: [4, "Wk 4"], child: Text("Wk 4")),
                     const PopupMenuItem(
@@ -194,6 +192,7 @@ class DateFilter extends StatelessWidget {
                     label: appProvider.QUARTER_SELECTED[2],
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
+                    size: 15,
                     icon: Icons.arrow_drop_down_rounded,
                   ),
                   itemBuilder: (context) => [
@@ -225,8 +224,8 @@ class DateFilter extends StatelessWidget {
                 child: PopupMenuButton<int>(
                   child: IconText(
                     label: appProvider.YEAR_SELECTED.toString(),
-                    color: Colors.black,
                     fontWeight: FontWeight.bold,
+                    color: Colors.black,
                     icon: Icons.arrow_drop_down_rounded,
                   ),
                   itemBuilder: (context) => [

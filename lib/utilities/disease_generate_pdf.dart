@@ -9,7 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
-Future<bool?> generatePurokRankingPDF(BuildContext context,
+Future<bool?> generateDiseaseRankingPDF(BuildContext context,
     {required Map reportDescription,
     required List<Map> purokRanking,
     required List classifiedZones}) async {
@@ -18,7 +18,7 @@ Future<bool?> generatePurokRankingPDF(BuildContext context,
 
   final PdfTextElement textElement = PdfTextElement(
       text:
-          "${reportDescription['title']}\n\n${reportDescription['description']}\n\n\nBarangay: ${reportDescription['barangayName']} | Filtered by: ${reportDescription['dateFilterType']} | ${reportDescription['dates']} | Ranked by ${reportDescription['diseaseNameFilter']}",
+          "${reportDescription['title']}\n\n${reportDescription['description']}\n\n\nBarangay: ${reportDescription['barangayName']} | Filtered by: ${reportDescription['dateFilterType']} | ${reportDescription['dates']} | Ranked by ${reportDescription['purokNameFilter']}",
       font: PdfStandardFont(PdfFontFamily.helvetica, 12));
 
   final PdfPage page = document.pages.add();
@@ -35,7 +35,7 @@ Future<bool?> generatePurokRankingPDF(BuildContext context,
 
   PdfGridRow rankingHeader = rankingGrid.headers[0];
   rankingHeader.cells[0].value = 'Rank';
-  rankingHeader.cells[1].value = 'Purok';
+  rankingHeader.cells[1].value = 'Disease Name';
   rankingHeader.cells[2].value = 'Victim Count';
 
   List.generate(purokRanking.length, (index) {
@@ -59,15 +59,15 @@ Future<bool?> generatePurokRankingPDF(BuildContext context,
   document.pageSettings.orientation = PdfPageOrientation.landscape;
 
   PdfGridRow header = grid.headers[0];
-  header.cells[0].value = 'Purok';
-  header.cells[1].value = 'Disease Name';
+  header.cells[0].value = 'Disease Name';
+  header.cells[1].value = 'Purok';
   header.cells[2].value = 'Alert Message';
   header.cells[3].value = 'Description';
 
   List.generate(classifiedZones.length, (index) {
     PdfGridRow row = grid.rows.add();
-    row.cells[0].value = classifiedZones[index]?['Purok'] ?? "";
-    row.cells[1].value = classifiedZones[index]['Geo_Name'] ?? "";
+    row.cells[0].value = classifiedZones[index]['Geo_Name'] ?? "";
+    row.cells[1].value = classifiedZones[index]?['Purok'] ?? "";
     row.cells[2].value = "${classifiedZones[index]?['alert_message'] ?? ""}";
     row.cells[3].value = classifiedZones[index]['Description'] ?? "";
   });

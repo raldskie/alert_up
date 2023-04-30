@@ -1,11 +1,16 @@
+import 'package:alert_up_project/provider/app_provider.dart';
 import 'package:alert_up_project/provider/diseases_provider.dart';
 import 'package:alert_up_project/provider/reports_provider.dart';
 import 'package:alert_up_project/utilities/constants.dart';
+import 'package:alert_up_project/utilities/disease_generate_pdf.dart';
+import 'package:alert_up_project/utilities/find_barangay.dart';
 import 'package:alert_up_project/widgets/barangay_filter.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/custom_app_bar.dart';
 import 'package:alert_up_project/widgets/date_filters.dart';
+import 'package:alert_up_project/widgets/form/form_theme.dart';
 import 'package:alert_up_project/widgets/purok_filter.dart';
+import 'package:alert_up_project/widgets/simple_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
@@ -18,6 +23,7 @@ class GeofenceDiseaseRanking extends StatefulWidget {
 }
 
 class _GeofenceDiseaseRankingState extends State<GeofenceDiseaseRanking> {
+  Map reportDescription = {};
   Map query = {};
 
   getClassifiedZones() {
@@ -50,6 +56,94 @@ class _GeofenceDiseaseRankingState extends State<GeofenceDiseaseRanking> {
     bool isGeneratingPDF = false;
     DiseasesProvider diseasesProvider = context.watch<DiseasesProvider>();
     ReportsProvider reportsProvider = context.watch<ReportsProvider>();
+    AppProvider appProvider = context.watch<AppProvider>();
+
+    addReportInfo() {
+      showDialog<String>(
+          context: context,
+          builder: (BuildContext context) {
+            return StatefulBuilder(builder: (context, setState) {
+              return Dialog(
+                insetPadding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Container(
+                  width: 400,
+                  height: 400,
+                  padding: const EdgeInsets.all(15),
+                  child: Column(children: [
+                    Expanded(
+                        child: SingleChildScrollView(
+                      child: Column(children: [
+                        const SizedBox(height: 15),
+                        TextFormField(
+                            initialValue: reportDescription['title'],
+                            validator: (val) {
+                              if (val!.isEmpty) {
+                                return "Field required";
+                              }
+                            },
+                            onChanged: (val) => setState(
+                                () => reportDescription['title'] = val),
+                            decoration: textFieldStyle(label: "Title")),
+                        const SizedBox(height: 15),
+                        TextFormField(
+                            initialValue: reportDescription['description'],
+                            validator: (val) {
+                              if (val!.isEmpty) {
+                                return "Field required";
+                              }
+                            },
+                            maxLines: null,
+                            onChanged: (val) => setState(
+                                () => reportDescription['description'] = val),
+                            decoration: textFieldStyle(label: "Description")),
+                      ]),
+                    )),
+                    const SizedBox(height: 15),
+                    Button(
+                      label: "Generate PDF",
+                      onPress: () async {
+                        if (reportDescription['description'] == null &&
+                            reportDescription['title'] == null) {
+                          dialogBuilder(context,
+                              title: "ERROR",
+                              description: "Please add title and description");
+                          return;
+                        }
+
+                        await generateDiseaseRankingPDF(context,
+                            reportDescription: {
+                              ...reportDescription,
+                              "barangayName":
+                                  getBarangay(query['barangayKey'])?.barangay ??
+                                      "None",
+                              "dateFilterType": query['createdAt'] != null
+                                  ? appProvider.DATE_FILTER_TYPE
+                                  : "None",
+                              "dates": query['createdAt'] != null
+                                  ? "${query['createdAt'][0]} ${query['createdAt'][1]}"
+                                  : "",
+                              "purokNameFilter": query['purokKey'] != null &&
+                                      query['barangayKey'] != null
+                                  ? getPurok(
+                                      query['barangayKey'], query['purokKey'])
+                                  : "None"
+                            },
+                            purokRanking: reportsProvider.purokRanking,
+                            classifiedZones: diseasesProvider.classifiedZones
+                                .map((e) =>
+                                    e.value is Map ? e.value as Map : null)
+                                .toList()
+                                .where((element) => element != null)
+                                .toList());
+                        Navigator.pop(context);
+                      },
+                    )
+                  ]),
+                ),
+              );
+            });
+          });
+    }
 
     return Scaffold(
         backgroundColor: Colors.white,
@@ -118,7 +212,7 @@ class _GeofenceDiseaseRankingState extends State<GeofenceDiseaseRanking> {
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
-                      child: Padding(
+                      child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 15),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

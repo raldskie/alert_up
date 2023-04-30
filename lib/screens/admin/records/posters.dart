@@ -3,6 +3,7 @@ import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/utilities/firebase_upload.dart';
 import 'package:alert_up_project/widgets/add_photo.dart';
 import 'package:alert_up_project/widgets/button.dart';
+import 'package:alert_up_project/widgets/image_view.dart';
 import 'package:alert_up_project/widgets/simple_dialog.dart';
 import 'package:alert_up_project/widgets/snackbar.dart';
 import 'package:file_picker/file_picker.dart';
@@ -159,66 +160,81 @@ class _PostersState extends State<Posters> {
                 Object? value = adminProvider.posters[index].value;
                 Map poster = value is Map ? value : {};
 
-                return Column(children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    child: Row(children: [
-                      Expanded(
-                          child: Text(
-                        DateFormat()
-                            .format(DateTime.parse(poster['createdAt'])),
-                        maxLines: 1,
-                        style: TextStyle(fontSize: 10),
-                      )),
-                      if (adminProvider.loading == "delete_poster_$index")
-                        Container(
-                            height: 20,
-                            width: 20,
-                            margin: const EdgeInsets.all(10),
-                            padding: const EdgeInsets.all(5),
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ))
-                      else
-                        IconButton(
-                            onPressed: () {
-                              dialogWithAction(context,
-                                  title: "This will delete the poster!",
-                                  actions: [
-                                    Button(
-                                        label: "Yes, please proceed",
-                                        onPress: () {
-                                          Navigator.pop(context, "OK");
-                                          adminProvider.deletePoster(
-                                              loading: "delete_poster_$index",
-                                              key: adminProvider
-                                                      .posters[index].key ??
-                                                  "",
-                                              callback: (code, message) {
-                                                launchSnackbar(
-                                                    context: context,
-                                                    mode: code == 200
-                                                        ? "SUCCESS"
-                                                        : "ERROR",
-                                                    message: message);
-                                              });
-                                        })
-                                  ]);
-                            },
-                            icon: Icon(
-                              Icons.close_rounded,
-                              size: 18,
-                              color: Colors.red,
-                            ))
-                    ]),
-                  ),
-                  Expanded(
-                    child: Image.network(
-                      poster['imageUrl'] ?? USER_PLACEHOLDER_IMAGE,
-                      fit: BoxFit.cover,
+                return InkWell(
+                  onTap: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) => Dialog(
+                            insetPadding: EdgeInsets.zero,
+                            backgroundColor: Colors.transparent,
+                            elevation: 0,
+                            child: ImageViewer(
+                                photos: List<String>.from(adminProvider.posters
+                                    .map((e) => (e.value as Map)['imageUrl'])
+                                    .toList()),
+                                index: index)));
+                  },
+                  child: Column(children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      child: Row(children: [
+                        Expanded(
+                            child: Text(
+                          DateFormat()
+                              .format(DateTime.parse(poster['createdAt'])),
+                          maxLines: 1,
+                          style: TextStyle(fontSize: 10),
+                        )),
+                        if (adminProvider.loading == "delete_poster_$index")
+                          Container(
+                              height: 20,
+                              width: 20,
+                              margin: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(5),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ))
+                        else
+                          IconButton(
+                              onPressed: () {
+                                dialogWithAction(context,
+                                    title: "This will delete the poster!",
+                                    actions: [
+                                      Button(
+                                          label: "Yes, please proceed",
+                                          onPress: () {
+                                            Navigator.pop(context, "OK");
+                                            adminProvider.deletePoster(
+                                                loading: "delete_poster_$index",
+                                                key: adminProvider
+                                                        .posters[index].key ??
+                                                    "",
+                                                callback: (code, message) {
+                                                  launchSnackbar(
+                                                      context: context,
+                                                      mode: code == 200
+                                                          ? "SUCCESS"
+                                                          : "ERROR",
+                                                      message: message);
+                                                });
+                                          })
+                                    ]);
+                              },
+                              icon: Icon(
+                                Icons.close_rounded,
+                                size: 18,
+                                color: Colors.red,
+                              ))
+                      ]),
                     ),
-                  ),
-                ]);
+                    Expanded(
+                      child: Image.network(
+                        poster['imageUrl'] ?? USER_PLACEHOLDER_IMAGE,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ]),
+                );
               }),
     );
   }

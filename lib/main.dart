@@ -1,5 +1,6 @@
 import 'package:alert_up_project/provider/admin_provider.dart';
 import 'package:alert_up_project/provider/app_provider.dart';
+import 'package:alert_up_project/provider/date_filter_b_provider.dart';
 import 'package:alert_up_project/provider/diseases_provider.dart';
 import 'package:alert_up_project/provider/location_provider.dart';
 import 'package:alert_up_project/provider/reports_provider.dart';
@@ -14,7 +15,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'provider/user_provider.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -24,7 +24,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();  
+      FlutterLocalNotificationsPlugin();
   flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()!
@@ -47,6 +47,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => AppProvider()),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ChangeNotifierProvider(create: (_) => DateFilterBProvider()),
       ],
       child: MaterialApp(
         title: 'AlertUp',

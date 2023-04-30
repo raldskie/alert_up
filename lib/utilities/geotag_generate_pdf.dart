@@ -9,16 +9,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
-Future<bool?> generatePurokRankingPDF(BuildContext context,
-    {required Map reportDescription,
-    required List<Map> purokRanking,
-    required List classifiedZones}) async {
+Future<bool?> generateGeotagPDF(BuildContext context,
+    {required Map reportDescription, required List geotagged}) async {
   //Create a new PDF document
   PdfDocument document = PdfDocument();
 
   final PdfTextElement textElement = PdfTextElement(
       text:
-          "${reportDescription['title']}\n\n${reportDescription['description']}\n\n\nBarangay: ${reportDescription['barangayName']} | Filtered by: ${reportDescription['dateFilterType']} | ${reportDescription['dates']} | Ranked by ${reportDescription['diseaseNameFilter']}",
+          "${reportDescription['title']}\n\n${reportDescription['description']}\n\n\nBarangay: ${reportDescription['barangayName']}",
       font: PdfStandardFont(PdfFontFamily.helvetica, 12));
 
   final PdfPage page = document.pages.add();
@@ -29,47 +27,40 @@ Future<bool?> generatePurokRankingPDF(BuildContext context,
           0, 50, page.getClientSize().width, page.getClientSize().height),
       format: PdfLayoutFormat(layoutType: PdfLayoutType.paginate));
 
-  PdfGrid rankingGrid = PdfGrid();
-  rankingGrid.columns.add(count: 3);
-  rankingGrid.headers.add(1);
-
-  PdfGridRow rankingHeader = rankingGrid.headers[0];
-  rankingHeader.cells[0].value = 'Rank';
-  rankingHeader.cells[1].value = 'Purok';
-  rankingHeader.cells[2].value = 'Victim Count';
-
-  List.generate(purokRanking.length, (index) {
-    PdfGridRow row = rankingGrid.rows.add();
-    row.cells[0].value = (index + 1).toString();
-    row.cells[1].value = purokRanking[index]['purokName'];
-    row.cells[2].value = (purokRanking[index]['geotagged'].length).toString();
-  });
-
-  rankingGrid.style = PdfGridStyle(
-      cellPadding: PdfPaddings(left: 2, right: 3, top: 4, bottom: 5),
-      backgroundBrush: PdfBrushes.wheat,
-      textBrush: PdfBrushes.black,
-      font: PdfStandardFont(PdfFontFamily.timesRoman, 25));
-  rankingGrid.draw(
-      page: document.pages.add(), bounds: const Rect.fromLTWH(0, 0, 0, 0));
-
   PdfGrid grid = PdfGrid();
-  grid.columns.add(count: 4);
+  grid.columns.add(count: 9);
   grid.headers.add(1);
   document.pageSettings.orientation = PdfPageOrientation.landscape;
 
   PdfGridRow header = grid.headers[0];
-  header.cells[0].value = 'Purok';
-  header.cells[1].value = 'Disease Name';
-  header.cells[2].value = 'Alert Message';
-  header.cells[3].value = 'Description';
+  header.cells[0].value = 'Name';
+  header.cells[1].value = 'Barangay';
+  header.cells[2].value = 'Age';
+  header.cells[3].value = 'Gender';
+  header.cells[4].value = 'Disease';
+  header.cells[5].value = 'Contagious/Infectious';
+  header.cells[6].value = 'Current Weather';
+  header.cells[7].value = 'Date Tagged';
+  header.cells[8].value = 'Date Untagged';
 
-  List.generate(classifiedZones.length, (index) {
+  List.generate(geotagged.length, (index) {
     PdfGridRow row = grid.rows.add();
-    row.cells[0].value = classifiedZones[index]?['Purok'] ?? "";
-    row.cells[1].value = classifiedZones[index]['Geo_Name'] ?? "";
-    row.cells[2].value = "${classifiedZones[index]?['alert_message'] ?? ""}";
-    row.cells[3].value = classifiedZones[index]['Description'] ?? "";
+    row.cells[0].value = geotagged[index]['name'] ?? "";
+    row.cells[1].value = geotagged[index]['barangay'] ?? "";
+    row.cells[2].value = geotagged[index]['age'] ?? "";
+    row.cells[3].value = geotagged[index]['gender'] ?? "";
+    row.cells[4].value = geotagged[index]['diseaseName'] ?? "";
+    row.cells[5].value =
+        (geotagged[index]['isContagious'] ?? false) ? "Yes" : "No";
+    row.cells[6].value = geotagged[index]['weatherName'] ?? "";
+    row.cells[7].value = geotagged[index]['created_At'] != null
+        ? DateFormat()
+            .format(DateTime.parse(geotagged[index]['created_At']).toLocal())
+        : "Not recorded";
+    row.cells[8].value = geotagged[index]['untagDate'] != null
+        ? DateFormat()
+            .format(DateTime.parse(geotagged[index]['untagDate']).toLocal())
+        : "Not recorded";
   });
 
   grid.style = PdfGridStyle(

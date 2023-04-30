@@ -1,12 +1,18 @@
+import 'package:alert_up_project/provider/app_provider.dart';
 import 'package:alert_up_project/provider/diseases_provider.dart';
 import 'package:alert_up_project/utilities/constants.dart';
 import 'package:alert_up_project/utilities/debouncer.dart';
+import 'package:alert_up_project/utilities/find_barangay.dart';
+import 'package:alert_up_project/utilities/geotag_generate_pdf.dart';
 import 'package:alert_up_project/widgets/accordion.dart';
 import 'package:alert_up_project/widgets/barangay_filter.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/custom_app_bar.dart';
+import 'package:alert_up_project/widgets/date_filter_b.dart';
 import 'package:alert_up_project/widgets/date_filters.dart';
+import 'package:alert_up_project/widgets/form/form_theme.dart';
 import 'package:alert_up_project/widgets/search_bar.dart';
+import 'package:alert_up_project/widgets/simple_dialog.dart';
 import 'package:alert_up_project/widgets/weather_filter.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -21,8 +27,8 @@ class GeotaggedReport extends StatefulWidget {
 }
 
 class _GeotaggedReportState extends State<GeotaggedReport> {
+  Map reportDescription = {};
   final _debouncer = Debouncer(milliseconds: 1000);
-
   Map query = {"barangayKey": null};
 
   getGeotagged() {
@@ -43,6 +49,82 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
   @override
   Widget build(BuildContext context) {
     DiseasesProvider diseasesProvider = context.watch<DiseasesProvider>();
+    AppProvider appProvider = context.watch<AppProvider>();
+
+    addReportInfo() {
+      showDialog<String>(
+          context: context,
+          builder: (BuildContext context) {
+            return StatefulBuilder(builder: (context, setState) {
+              return Dialog(
+                insetPadding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Container(
+                  width: 400,
+                  height: 400,
+                  padding: const EdgeInsets.all(15),
+                  child: Column(children: [
+                    Expanded(
+                        child: SingleChildScrollView(
+                      child: Column(children: [
+                        const SizedBox(height: 15),
+                        TextFormField(
+                            initialValue: reportDescription['title'],
+                            validator: (val) {
+                              if (val!.isEmpty) {
+                                return "Field required";
+                              }
+                            },
+                            onChanged: (val) => setState(
+                                () => reportDescription['title'] = val),
+                            decoration: textFieldStyle(label: "Title")),
+                        const SizedBox(height: 15),
+                        TextFormField(
+                            initialValue: reportDescription['description'],
+                            validator: (val) {
+                              if (val!.isEmpty) {
+                                return "Field required";
+                              }
+                            },
+                            maxLines: null,
+                            onChanged: (val) => setState(
+                                () => reportDescription['description'] = val),
+                            decoration: textFieldStyle(label: "Description")),
+                      ]),
+                    )),
+                    const SizedBox(height: 15),
+                    Button(
+                      label: "Generate PDF",
+                      onPress: () async {
+                        if (reportDescription['description'] == null &&
+                            reportDescription['title'] == null) {
+                          dialogBuilder(context,
+                              title: "ERROR",
+                              description: "Please add title and description");
+                          return;
+                        }
+
+                        await generateGeotagPDF(context,
+                            reportDescription: {
+                              ...reportDescription,
+                              "barangayName":
+                                  getBarangay(query['barangayKey'])?.barangay ??
+                                      "None",
+                            },
+                            geotagged: diseasesProvider.geotaggedIndividuals
+                                .map((e) =>
+                                    e.value is Map ? e.value as Map : null)
+                                .toList()
+                                .where((element) => element != null)
+                                .toList());
+                        Navigator.pop(context);
+                      },
+                    )
+                  ]),
+                ),
+              );
+            });
+          });
+    }
 
     return Scaffold(
         appBar: customAppBar(context, title: "Geotag Report", actions: [
@@ -53,14 +135,7 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
               borderColor: Colors.transparent,
               textColor: ACCENT_COLOR,
               onPress: () async {
-                Map temp = {
-                  "barangay": "",
-                  "ageRange": "",
-                  "dateTagged": "",
-                  "dateUntagged": "",
-                  "title": "",
-                  "purpose": "",
-                };
+                addReportInfo();
               })
         ]),
         backgroundColor: Colors.white,
@@ -113,22 +188,28 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                                     "Age Range ${query['age'] != null ? "| ${query['age'].start.toInt()} to ${query['age'].end.toInt()}" : ""}",
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold)),
-                                RangeSlider(
-                                  activeColor: ACCENT_COLOR,
-                                  values: query['age'] != null
-                                      ? query['age']
-                                      : RangeValues(0, 100),
-                                  max: 100,
-                                  divisions: 100,
-                                  onChanged: (RangeValues values) {
-                                    setState(() {
-                                      query['age'] = values;
-                                    });
-                                    _debouncer.run(() {
-                                      getGeotagged();
-                                    });
-                                  },
-                                ),
+                                Row(children: [
+                                  Text("0"),
+                                  Expanded(
+                                    child: RangeSlider(
+                                      activeColor: ACCENT_COLOR,
+                                      values: query['age'] != null
+                                          ? query['age']
+                                          : RangeValues(0, 100),
+                                      max: 100,
+                                      divisions: 100,
+                                      onChanged: (RangeValues values) {
+                                        setState(() {
+                                          query['age'] = values;
+                                        });
+                                        _debouncer.run(() {
+                                          getGeotagged();
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  Text("100"),
+                                ]),
                                 const SizedBox(height: 20),
                                 Text("Current weather when recorded",
                                     style:
@@ -164,7 +245,7 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                                 Text("Date Untagged",
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold)),
-                                DateFilter(
+                                DateFilterB(
                                     backgroundColor: Colors.transparent,
                                     padding: 0,
                                     onApplyFilter:
