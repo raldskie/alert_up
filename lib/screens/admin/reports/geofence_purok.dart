@@ -36,10 +36,12 @@ class _GeofencePurokRankingState extends State<GeofencePurokRanking> {
   }
 
   getPurokRanking() {
-    Provider.of<ReportsProvider>(context, listen: false).getPurokRanking(
-        puroks: getBarangay(query['barangayKey'])!.purok,
-        filters: purokRankingFilter,
-        callback: (code, message) {});
+    if (query['barangayKey'] != null) {
+      Provider.of<ReportsProvider>(context, listen: false).getPurokRanking(
+          puroks: getBarangay(query['barangayKey'])!.purok,
+          filters: purokRankingFilter,
+          callback: (code, message) {});
+    }
   }
 
   getDiseases() {
@@ -189,25 +191,28 @@ class _GeofencePurokRankingState extends State<GeofencePurokRanking> {
                             getPurokRanking();
                           })),
                   const Divider(),
-                  Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: DateFilter(
-                          backgroundColor: Colors.transparent,
-                          padding: 0,
-                          onApplyFilter:
-                              (DateTime startDate, DateTime endDate) {
-                            setState(() {
-                              query['createdAt'] = [startDate, endDate];
-                              purokRankingFilter['createdAt'] = [
-                                startDate,
-                                endDate
-                              ];
-                            });
-                            getClassifiedZones();
-                            getPurokRanking();
-                          },
-                          startDate: "",
-                          endDate: "")),
+                  Opacity(
+                    opacity: query['createdAt'] != null ? 1 : .5,
+                    child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        child: DateFilter(
+                            backgroundColor: Colors.transparent,
+                            padding: 0,
+                            onApplyFilter:
+                                (DateTime startDate, DateTime endDate) {
+                              setState(() {
+                                query['createdAt'] = [startDate, endDate];
+                                purokRankingFilter['createdAt'] = [
+                                  startDate,
+                                  endDate
+                                ];
+                              });
+                              getClassifiedZones();
+                              getPurokRanking();
+                            },
+                            startDate: "",
+                            endDate: "")),
+                  ),
                   const Divider(),
                   Expanded(
                     child: SingleChildScrollView(

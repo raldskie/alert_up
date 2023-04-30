@@ -192,22 +192,25 @@ class _GeofenceDiseaseRankingState extends State<GeofenceDiseaseRanking> {
                             getRanking();
                           })),
                   const Divider(),
-                  Container(
-                      color: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: DateFilter(
-                          backgroundColor: Colors.transparent,
-                          padding: 0,
-                          onApplyFilter:
-                              (DateTime startDate, DateTime endDate) {
-                            setState(() {
-                              query['createdAt'] = [startDate, endDate];
-                            });
-                            getClassifiedZones();
-                            getRanking();
-                          },
-                          startDate: "",
-                          endDate: "")),
+                  Opacity(
+                    opacity: query['createdAt'] != null ? 1 : .5,
+                    child: Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        child: DateFilter(
+                            backgroundColor: Colors.transparent,
+                            padding: 0,
+                            onApplyFilter:
+                                (DateTime startDate, DateTime endDate) {
+                              setState(() {
+                                query['createdAt'] = [startDate, endDate];
+                              });
+                              getClassifiedZones();
+                              getRanking();
+                            },
+                            startDate: "",
+                            endDate: "")),
+                  ),
                   const Divider(),
                   Expanded(
                     child: SingleChildScrollView(
@@ -264,7 +267,8 @@ class _GeofenceDiseaseRankingState extends State<GeofenceDiseaseRanking> {
                             }),
                             const SizedBox(height: 15),
                             const Divider(),
-                            Text("Geofence Purok List"),
+                            Text("Geofence Purok List",
+                                style: TextStyle(fontWeight: FontWeight.bold)),
                             const SizedBox(height: 10),
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,

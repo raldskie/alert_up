@@ -17,7 +17,8 @@ class PurokFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(children: [
-      Text("Disease Ranking by Purok"),
+      Text("Disease Ranking by Purok",
+          style: TextStyle(fontWeight: FontWeight.bold)),
       Expanded(child: Container()),
       DropdownButton2<String>(
           value: purokKey, // getBarangay()?.barangay,

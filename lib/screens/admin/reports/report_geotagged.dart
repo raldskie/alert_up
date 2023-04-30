@@ -224,44 +224,50 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                                 Text("Date Tagged",
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold)),
-                                DateFilter(
-                                    backgroundColor: Colors.transparent,
-                                    padding: 0,
-                                    onApplyFilter:
-                                        (DateTime startDate, DateTime endDate) {
-                                      setState(() {
-                                        query['dateTagged'] = [
-                                          startDate,
-                                          endDate
-                                        ];
-                                      });
-                                      _debouncer.run(() {
-                                        getGeotagged();
-                                      });
-                                    },
-                                    startDate: "",
-                                    endDate: ""),
+                                Opacity(
+                                  opacity: query['dateTagged'] != null ? 1 : .5,
+                                  child: DateFilter(
+                                      backgroundColor: Colors.transparent,
+                                      padding: 0,
+                                      onApplyFilter: (DateTime startDate,
+                                          DateTime endDate) {
+                                        setState(() {
+                                          query['dateTagged'] = [
+                                            startDate,
+                                            endDate
+                                          ];
+                                        });
+                                        _debouncer.run(() {
+                                          getGeotagged();
+                                        });
+                                      },
+                                      startDate: "",
+                                      endDate: ""),
+                                ),
                                 const SizedBox(height: 20),
                                 Text("Date Untagged",
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold)),
-                                DateFilterB(
-                                    backgroundColor: Colors.transparent,
-                                    padding: 0,
-                                    onApplyFilter:
-                                        (DateTime startDate, DateTime endDate) {
-                                      setState(() {
-                                        query['dateUntagged'] = [
-                                          startDate,
-                                          endDate
-                                        ];
-                                      });
-                                      _debouncer.run(() {
-                                        getGeotagged();
-                                      });
-                                    },
-                                    startDate: "",
-                                    endDate: ""),
+                                Opacity(
+                                  opacity: query['dateTagged'] != null ? 1 : .5,
+                                  child: DateFilterB(
+                                      backgroundColor: Colors.transparent,
+                                      padding: 0,
+                                      onApplyFilter: (DateTime startDate,
+                                          DateTime endDate) {
+                                        setState(() {
+                                          query['dateUntagged'] = [
+                                            startDate,
+                                            endDate
+                                          ];
+                                        });
+                                        _debouncer.run(() {
+                                          getGeotagged();
+                                        });
+                                      },
+                                      startDate: "",
+                                      endDate: ""),
+                                ),
                               ]),
                         )),
                     if (diseasesProvider.loading == "geotagged_list")

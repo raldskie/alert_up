@@ -29,7 +29,7 @@ class DateFilterBProvider extends ChangeNotifier {
   List _DAY_SELECTED = [DateTime.now().day, "${DateTime.now().day}"];
   List get DAY_SELECTED => _DAY_SELECTED;
 
-  String _DATE_FILTER_TYPE = "Weekly";
+  String _DATE_FILTER_TYPE = "Yearly";
   String get DATE_FILTER_TYPE => _DATE_FILTER_TYPE;
 
   List<String> _loading = [];
