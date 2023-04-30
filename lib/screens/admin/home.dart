@@ -31,9 +31,8 @@ class _AdminHomeState extends State<AdminHome> {
         callback: (code, message) {
           if (code == 200) {
             Provider.of<ReportsProvider>(context, listen: false).getRanking(
-                dates: {
-                  "startDate": DateTime.parse(startDate),
-                  "endDate": DateTime.parse(endDate)
+                filters: {
+                  "dates": [DateTime.parse(startDate), DateTime.parse(endDate)]
                 },
                 callback: (code, message) {
                   if (code == 200) {

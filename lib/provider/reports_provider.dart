@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:alert_up_project/models/address_model.dart';
 import 'package:alert_up_project/utilities/constants.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -26,8 +27,11 @@ class ReportsProvider extends ChangeNotifier {
   String _areaOfCasisang = "";
   String get areaOfCasisang => _areaOfCasisang;
 
-  List<Map> _ranking = [];
+  List<Map> _ranking = []; // disease ranking
   List<Map> get ranking => _ranking;
+
+  List<Map> _purokRanking = [];
+  List<Map> get purokRanking => _purokRanking;
 
   int _activeCases = 0;
   int get activeCases => _activeCases;
@@ -139,10 +143,7 @@ class ReportsProvider extends ChangeNotifier {
     });
   }
 
-  getRanking({Map<String, DateTime>? dates, required Function callback}) async {
-    DateTime? startDate = dates?['startDate'];
-    DateTime? endDate = dates?['endDate'];
-
+  getRanking({Map? filters, required Function callback}) async {
     setLoading("ranking");
     Query diseaseRef = FirebaseDatabase.instance
         .ref("alerts_zone/list_of_disease")
@@ -158,13 +159,42 @@ class ReportsProvider extends ChangeNotifier {
 
       geotaggedRef.onValue.listen((geotagged) {
         geotagged.snapshot.children.where((e) {
-          DateTime? createdAt =
-              DateTime.tryParse((e.value as Map)['created_At'].toString());
-          if (createdAt != null && startDate != null && endDate != null) {
-            if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
-              return true;
+          var value = e.value as Map;
+
+          if (filters == null) {
+            return true;
           }
-          return false;
+
+          int activeFilters = filters.values
+              .fold(0, (value, element) => element != null ? value + 1 : value);
+          int trueCount = 0;
+
+          if (filters['dates'] != null) {
+            DateTime? createdAt =
+                DateTime.tryParse(value['created_At'].toString());
+            DateTime? startDate = filters['dates'][0];
+            DateTime? endDate = filters['dates'][1];
+            if (createdAt != null && startDate != null && endDate != null) {
+              if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+                trueCount += 1;
+            }
+          }
+
+          if (filters['barangayKey'] != null &&
+              filters['barangayKey'] == value['barangayKey']) {
+            trueCount += 1;
+          }
+
+          if (filters['purokKey'] != null &&
+              filters['purokKey'] == value['purokKey']) {
+            trueCount += 1;
+          }
+
+          print(filters['dates']);
+          print(activeFilters);
+          print(trueCount);
+
+          return activeFilters == trueCount;
         }).forEach((tag) {
           int index = _ranking.lastIndexWhere(
               (disease) => disease['key'] == (tag.value as Map)['diseaseKey']);
@@ -185,6 +215,78 @@ class ReportsProvider extends ChangeNotifier {
           }
         });
       });
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      setLoading("stop");
+      callback(200, FETCH_SUCCESS);
+    }, onError: (error) {
+      setLoading("stop");
+      callback(500, FETCH_ERROR);
+    });
+  }
+
+  getPurokRanking(
+      {required List<Purok> puroks,
+      Map? filters,
+      required Function callback}) async {
+    setLoading("ranking");
+
+    // Query diseaseRef = FirebaseDatabase.instance
+    //     .ref("alerts_zone/list_of_disease")
+    //     .orderByChild("disease_name");
+    Query geotaggedRef = FirebaseDatabase.instance.ref("geotagged_individuals");
+
+    geotaggedRef.onValue.listen((event) async {
+      _purokRanking = puroks
+          .map((e) => {
+                "purokName": e.purokName,
+                "purokKey": e.purokKey,
+                "geotagged": []
+              })
+          .toList();
+
+      List<DataSnapshot> geotags = event.snapshot.children.toList();
+
+      //insert pa dayun filter here
+      geotags.where((element) {
+        var value = element.value as Map;
+
+        if (filters == null) {
+          return true;
+        }
+
+        int activeFilters = filters.values
+            .fold(0, (value, element) => element != null ? value + 1 : value);
+        int trueCount = 0;
+
+        if (filters['diseaseKey'] != null &&
+            filters['diseaseKey'] == value['diseaseKey']) {
+          trueCount += 1;
+        }
+
+        return activeFilters == trueCount;
+      }).forEach((e) {
+        Map geotag = e.value as Map;
+
+        int index = _purokRanking
+            .lastIndexWhere((purok) => purok['purokKey'] == geotag['purokKey']);
+
+        if (index > -1) {
+          bool hasAdded = (_purokRanking[index]['geotagged'] ?? [])
+              .any((user) => user['deviceId'] == geotag['deviceId']);
+          if (!hasAdded) {
+            _purokRanking[index] = Map<String, Object>.from({
+              ..._purokRanking[index],
+              "geotagged": [..._purokRanking[index]['geotagged'], geotag]
+            });
+          }
+        }
+      });
+
+      _purokRanking.sort((a, b) =>
+          (((a['geotagged'] ?? []).length) > ((b['geotagged'] ?? []).length))
+              ? -1
+              : 1);
 
       await Future.delayed(const Duration(milliseconds: 500));
       setLoading("stop");

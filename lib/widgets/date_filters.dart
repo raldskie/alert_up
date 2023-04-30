@@ -13,15 +13,17 @@ class DateFilter extends StatelessWidget {
   double? margin;
   int? padding;
   bool? compactMode;
-  DateFilter({
-    Key? key,
-    required this.onApplyFilter,
-    required this.startDate,
-    required this.endDate,
-    this.compactMode,
-    this.margin,
-    this.padding,
-  }) : super(key: key);
+  Color? backgroundColor;
+  DateFilter(
+      {Key? key,
+      required this.onApplyFilter,
+      required this.startDate,
+      required this.endDate,
+      this.compactMode,
+      this.margin,
+      this.padding,
+      this.backgroundColor})
+      : super(key: key);
 
   getDay(day, week, month, year) {
     DateTime startDate = DateTime(year, month[0], day[0]);
@@ -56,9 +58,9 @@ class DateFilter extends StatelessWidget {
 
     return Container(
         margin: EdgeInsets.all(margin ?? 0),
-        color: Colors.white,
+        color: backgroundColor ?? Colors.white,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 15),
+          padding:  EdgeInsets.symmetric(vertical: padding?.toDouble() ?? 15),
           child: Row(children: [
             Expanded(
               child: DropdownButton2<String>(

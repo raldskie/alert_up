@@ -54,6 +54,8 @@ class AdminProvider extends ChangeNotifier {
     DatabaseReference diseaseRef =
         FirebaseDatabase.instance.ref("posters/$key");
 
+    // TODO: ALSO DELETE IN FB STORAGE
+
     try {
       setLoading(loading);
       await diseaseRef.set(null);

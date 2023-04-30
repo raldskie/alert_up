@@ -37,5 +37,9 @@ List<Barangay> BARANGAYS = [
     Purok(purokKey: "CAS-P11", purokName: "Purok 11"),
     Purok(purokKey: "CAS-P12", purokName: "Purok 12"),
     Purok(purokKey: "CAS-P13", purokName: "Purok 13"),
+  ]),
+  Barangay(barangayKey: "AGL", barangay: "Aglayan", purok: [
+    Purok(purokKey: "AGL-P1", purokName: "Purok 1"),
+    Purok(purokKey: "AGL-P2", purokName: "Purok 2"),
   ])
 ];

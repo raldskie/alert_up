@@ -7,6 +7,8 @@ class DefaultFirebaseOptions {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
+      case TargetPlatform.macOS:
+        return macos;
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -31,5 +33,20 @@ class DefaultFirebaseOptions {
     projectId: 'alertup-b3e54',
     databaseURL: 'https://alertup-b3e54-default-rtdb.firebaseio.com',
     storageBucket: 'alertup-b3e54.appspot.com',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDooSUGSf63Ghq02_iIhtnmwMDs4HlWS6c',
+    appId: '1:406099696497:ios:e31ee2c5dc99d4743574d0',
+    messagingSenderId: '406099696497',
+    projectId: 'flutterfire-e2e-tests',
+    databaseURL:
+        'https://flutterfire-e2e-tests-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'flutterfire-e2e-tests.appspot.com',
+    androidClientId:
+        '406099696497-17qn06u8a0dc717u8ul7s49ampk13lul.apps.googleusercontent.com',
+    iosClientId:
+        '406099696497-1ugbsqv8nkfn788ep0k233e750aupb7u.apps.googleusercontent.com',
+    iosBundleId: 'io.flutter.plugins.firebaseDatabaseExample',
   );
 }

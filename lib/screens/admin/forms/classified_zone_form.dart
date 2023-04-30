@@ -27,6 +27,8 @@ class ClassifiedZoneForm extends StatefulWidget {
 }
 
 class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
+  SingleValueDropDownController purokCont = SingleValueDropDownController();
+
   Map payload = {
     "Radius": 1,
     "Purok": "",
@@ -49,6 +51,16 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
             callback: (code, message) {
               if (code == 200) {
                 payload = (diseasesProvider.classifiedZone?.value ?? {}) as Map;
+                if (getPurok(payload['barangayKey'], payload['purokKey']) !=
+                    null) {
+                  purokCont.dropDownValue = DropDownValueModel(
+                      name:
+                          getPurok(payload['barangayKey'], payload['purokKey'])!
+                              .purokName,
+                      value:
+                          getPurok(payload['barangayKey'], payload['purokKey'])!
+                              .purokKey);
+                }
                 return;
               }
               launchSnackbar(
@@ -70,6 +82,7 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
                   "Description": disease['disease_description'],
                   "alert_message": disease['alert_message'],
                 };
+
                 return;
               }
               launchSnackbar(
@@ -111,30 +124,6 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
               child: Form(
                   child: Column(children: [
                 const SizedBox(height: 20),
-                // TextFormField(
-                //     initialValue: (payload['Purok'] ?? "").toString(),
-                //     validator: (val) {
-                //       if (val!.isEmpty) {
-                //         return "Field required";
-                //       }
-                //     },
-                //     onChanged: (val) => setState(() => payload['Purok'] = val),
-                //     decoration: textFieldStyle(label: "Purok")),
-                // const SizedBox(height: 15),
-                // TextFormField(
-                //     initialValue: (payload['Radius'] ?? "").toString(),
-                //     validator: (val) {
-                //       if (val!.isEmpty) {
-                //         return "Field required";
-                //       }
-
-                //       if (int.tryParse(val) == null) {
-                //         return "Input invalid!";
-                //       }
-                //     },
-                //     keyboardType: TextInputType.number,
-                //     onChanged: (val) => setState(() => payload['Radius'] = val),
-                //     decoration: textFieldStyle(label: "Radius")),
                 DropDownTextField(
                     initialValue: getBarangay(payload['barangayKey'])?.barangay,
                     clearOption: true,
@@ -159,10 +148,8 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
                     }),
                 const SizedBox(height: 20),
                 DropDownTextField(
+                    controller: purokCont,
                     isEnabled: payload['barangayKey'] != null,
-                    initialValue:
-                        getPurok(payload['barangayKey'], payload['purokKey'])
-                            ?.purokName,
                     clearOption: true,
                     clearIconProperty: IconProperty(color: ACCENT_COLOR),
                     dropDownItemCount: 6,
@@ -182,6 +169,7 @@ class _ClassifiedZoneFormState extends State<ClassifiedZoneForm> {
                         ...payload,
                         ...getPurok(payload['barangayKey'], val.value)!.toJson()
                       };
+                      purokCont.clearDropDown();
                     }),
                 const SizedBox(height: 15),
                 Button(

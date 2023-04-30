@@ -1,8 +1,14 @@
 import 'package:alert_up_project/provider/diseases_provider.dart';
+import 'package:alert_up_project/provider/reports_provider.dart';
 import 'package:alert_up_project/utilities/constants.dart';
+import 'package:alert_up_project/utilities/debouncer.dart';
+import 'package:alert_up_project/widgets/accordion.dart';
 import 'package:alert_up_project/widgets/barangay_filter.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/custom_app_bar.dart';
+import 'package:alert_up_project/widgets/date_filters.dart';
+import 'package:alert_up_project/widgets/search_bar.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -15,13 +21,21 @@ class GeotaggedReport extends StatefulWidget {
 }
 
 class _GeotaggedReportState extends State<GeotaggedReport> {
+  final _debouncer = Debouncer(milliseconds: 1000);
+
   Map query = {"barangayKey": null};
+
+  getGeotagged() {
+    Provider.of<DiseasesProvider>(context, listen: false)
+        .getGeotaggedList(filters: query, callback: (code, message) {});
+  }
 
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      getGeotagged();
       Provider.of<DiseasesProvider>(context, listen: false)
-          .getGeotaggedList(callback: (code, message) {});
+          .getDiseaseList(callback: (code, message) {});
     });
     super.initState();
   }
@@ -41,27 +55,128 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
               onPress: () async {})
         ]),
         backgroundColor: Colors.white,
-        body: diseasesProvider.loading == "classified_list"
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  Container(
-                      color: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 15),
-                      child: BarangayFilter(
-                          barangayKey: query['barangayKey'],
-                          onChange: (value) {
-                            setState(() {
-                              query = {...query, "barangayKey": value};
-                            });
-                          })),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: SingleChildScrollView(
+        body: Column(
+          children: [
+            Container(
+                color: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                child: BarangayFilter(
+                    barangayKey: query['barangayKey'],
+                    onChange: (value) {
+                      setState(() {
+                        query = {...query, "barangayKey": value};
+                      });
+                      getGeotagged();
+                    })),
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Column(
+                  children: [
+                    const Divider(),
+                    Accordion(
+                        titleIcon: Icons.filter_alt,
+                        title: "Filters",
+                        content: Container(
+                          color: ACCENT_COLOR.withOpacity(.05),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 25),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Search Name",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 5),
+                                SearchBar(
+                                    searchKey: query['name'] ?? "",
+                                    backgroundColor:
+                                        ACCENT_COLOR.withOpacity(.1),
+                                    onChanged: (val) {
+                                      query['name'] = val;
+                                      _debouncer.run(() {
+                                        getGeotagged();
+                                      });
+                                    }),
+                                const SizedBox(height: 20),
+                                Text(
+                                    "Age Range ${query['age'] != null ? "| ${query['age'].start.toInt()} to ${query['age'].end.toInt()}" : ""}",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                RangeSlider(
+                                  activeColor: ACCENT_COLOR,
+                                  values: query['age'] != null
+                                      ? query['age']
+                                      : RangeValues(0, 100),
+                                  max: 100,
+                                  divisions: 10,
+                                  onChanged: (RangeValues values) {
+                                    setState(() {
+                                      query['age'] = values;
+                                    });
+                                    _debouncer.run(() {
+                                      getGeotagged();
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                Text("Date Tagged",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                DateFilter(
+                                    backgroundColor: Colors.transparent,
+                                    padding: 0,
+                                    onApplyFilter:
+                                        (DateTime startDate, DateTime endDate) {
+                                      setState(() {
+                                        query['dateTagged'] = [
+                                          startDate,
+                                          endDate
+                                        ];
+                                      });
+                                      _debouncer.run(() {
+                                        getGeotagged();
+                                      });
+                                    },
+                                    startDate: "",
+                                    endDate: ""),
+                                const SizedBox(height: 20),
+                                Text("Date Untagged",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                DateFilter(
+                                    backgroundColor: Colors.transparent,
+                                    padding: 0,
+                                    onApplyFilter:
+                                        (DateTime startDate, DateTime endDate) {
+                                      setState(() {
+                                        query['dateUntagged'] = [
+                                          startDate,
+                                          endDate
+                                        ];
+                                      });
+                                      _debouncer.run(() {
+                                        getGeotagged();
+                                      });
+                                    },
+                                    startDate: "",
+                                    endDate: ""),
+                              ]),
+                        )),
+                    if (diseasesProvider.loading == "geotagged_list")
+                      Padding(
+                        padding: const EdgeInsets.all(50),
+                        child: const Center(
+                            child: CircularProgressIndicator(
+                          strokeWidth: 1,
+                          color: ACCENT_COLOR,
+                        )),
+                      )
+                    else
+                      SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        child: DataTable(dataRowHeight: 100, columns: const [
+                        child: DataTable(dataRowHeight: 100, columns: [
                           DataColumn(
                             label: Text('Name'),
                           ),
@@ -69,14 +184,95 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                             label: Text('Age'),
                           ),
                           DataColumn(
-                            label: Text('Gender'),
+                            label: DropdownButton2<String>(
+                                value: query['gender'],
+                                underline: Container(
+                                  color: Colors.grey[100],
+                                  height: 0,
+                                ),
+                                iconStyleData: const IconStyleData(
+                                    icon: Icon(
+                                  Icons.filter_list_rounded,
+                                  size: 14,
+                                )),
+                                dropdownStyleData: DropdownStyleData(
+                                    padding: EdgeInsets.zero, width: 100),
+                                onChanged: (String? e) {
+                                  setState(() {
+                                    query = {...query, "gender": e};
+                                  });
+                                  getGeotagged();
+                                },
+                                hint: Text(
+                                  "Gender",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                items: const [
+                                  "Male",
+                                  "Female",
+                                ]
+                                    .map((e) => DropdownMenuItem<String>(
+                                          value: e,
+                                          child: Text(e),
+                                        ))
+                                    .toList()),
                           ),
                           DataColumn(
-                            label: Text('Disease'),
+                            label: DropdownButton2<String>(
+                                value: null,
+                                underline: Container(
+                                  color: Colors.grey[100],
+                                  height: 0,
+                                ),
+                                iconStyleData: const IconStyleData(
+                                    icon: Icon(
+                                  Icons.filter_list_rounded,
+                                  size: 14,
+                                )),
+                                dropdownStyleData: DropdownStyleData(
+                                    padding: EdgeInsets.zero, width: 200),
+                                onChanged: (String? e) {},
+                                hint: Text(
+                                  "Disease",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                items: (diseasesProvider.diseases).map((e) {
+                                  Object? value = e.value;
+                                  Map disease = value is Map ? value : {};
+                                  return DropdownMenuItem<String>(
+                                    value: e.key,
+                                    child: Text(disease['disease_name']),
+                                  );
+                                }).toList()),
                           ),
                           DataColumn(
-                            label: Text('Contagious/Infectious'),
-                          ),
+                              label: DropdownButton2<String>(
+                                  value: null,
+                                  underline: Container(
+                                    color: Colors.grey[100],
+                                    height: 0,
+                                  ),
+                                  iconStyleData: const IconStyleData(
+                                      icon: Icon(
+                                    Icons.filter_list_rounded,
+                                    size: 14,
+                                  )),
+                                  dropdownStyleData: DropdownStyleData(
+                                      padding: EdgeInsets.zero, width: 100),
+                                  onChanged: (String? e) {},
+                                  hint: Text(
+                                    'Contagious/Infectious',
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                  items: const [
+                                    "Yes",
+                                    "No",
+                                  ]
+                                      .map((e) => DropdownMenuItem<String>(
+                                            value: e,
+                                            child: Text(e),
+                                          ))
+                                      .toList())),
                           DataColumn(
                             label: Text('Date Tagged'),
                           ),
@@ -134,9 +330,11 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                           })
                         ]),
                       ),
-                    ),
-                  ),
-                ],
-              ));
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ));
   }
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:alert_up_project/utilities/constants.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class DiseasesProvider extends ChangeNotifier {
@@ -129,25 +130,37 @@ class DiseasesProvider extends ChangeNotifier {
     });
   }
 
-  getClassifiedZones(
-      {Map<String, DateTime>? dates, required Function callback}) async {
-    DateTime? startDate = dates?['startDate'];
-    DateTime? endDate = dates?['endDate'];
-
+  getClassifiedZones({Map? filters, required Function callback}) async {
     setLoading("classified_list");
     Query diseaseRef =
         FirebaseDatabase.instance.ref("alerts_zone/classified_zone");
 
     diseaseRef.onValue.listen((event) async {
-      if (dates != null) {
-        _classifiedZones = event.snapshot.children.where((e) {
-          DateTime? createdAt =
-              DateTime.tryParse((e.value as Map)['createdAt'].toString());
-          if (createdAt != null && startDate != null && endDate != null) {
-            if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
-              return true;
+      if (filters != null) {
+        _classifiedZones = event.snapshot.children.where((element) {
+          var value = element.value as Map;
+
+          int activeFilters = filters.values
+              .fold(0, (value, element) => element != null ? value + 1 : value);
+
+          int trueCount = 0;
+
+          if (filters['barangayKey'] != null &&
+              filters['barangayKey'] == value['barangayKey']) {
+            trueCount += 1;
           }
-          return false;
+
+          if (filters['purokKey'] != null &&
+              filters['purokKey'] == value['purokKey']) {
+            trueCount += 1;
+          }
+
+          if (filters['diseaseKey'] != null &&
+              filters['diseaseKey'] == value['diseaseKey']) {
+            trueCount += 1;
+          }
+
+          return activeFilters == trueCount;
         }).toList();
       } else {
         _classifiedZones = event.snapshot.children.toList();
@@ -282,12 +295,76 @@ class DiseasesProvider extends ChangeNotifier {
     }
   }
 
-  getGeotaggedList({required Function callback}) async {
+  getGeotaggedList({Map? filters, required Function callback}) async {
     setLoading("geotagged_list");
     Query diseaseRef = FirebaseDatabase.instance.ref("geotagged_individuals");
 
     diseaseRef.onValue.listen((event) async {
-      _geotaggedIndividuals = event.snapshot.children.toList();
+      if (filters == null || filters.keys.isEmpty) {
+        _geotaggedIndividuals = event.snapshot.children.toList();
+      } else {
+        _geotaggedIndividuals = event.snapshot.children.where((element) {
+          var value = element.value as Map;
+
+          int activeFilters = filters.values
+              .fold(0, (value, element) => element != null ? value + 1 : value);
+
+          int trueCount = 0;
+
+          if (filters['barangayKey'] != null &&
+              filters['barangayKey'] == value['barangayKey']) {
+            trueCount += 1;
+          }
+
+          if (filters['gender'] != null &&
+              filters['gender'] == value['gender']) {
+            trueCount += 1;
+          }
+
+          if (filters['name'] != null &&
+              (value['name'] as String)
+                  .toLowerCase()
+                  .contains(filters['name'].toLowerCase())) {
+            trueCount += 1;
+          }
+
+          if (filters['age'] != null) {
+            RangeValues age = filters['age'] as RangeValues;
+            int userAge = int.parse(value['age'] ?? "-1");
+            if (userAge >= age.start && userAge <= age.end) trueCount += 1;
+          }
+
+          if (filters['dateTagged'] != null) {
+            DateTime? createdAt =
+                DateTime.tryParse(value['created_At'].toString());
+            DateTime? startDate = filters['dateTagged'][0];
+            DateTime? endDate = filters['dateTagged'][1];
+
+            if (createdAt != null && startDate != null && endDate != null) {
+              if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+                trueCount += 1;
+            }
+          }
+
+          if (filters['dateUntagged'] != null) {
+            DateTime? createdAt =
+                DateTime.tryParse(value['untagDate'].toString());
+            DateTime? startDate = filters['dateUntagged'][0];
+            DateTime? endDate = filters['dateUntagged'][1];
+
+            if (createdAt != null && startDate != null && endDate != null) {
+              if (startDate.isBefore(createdAt) && endDate.isAfter(createdAt))
+                trueCount += 1;
+            }
+          }
+
+          // print(filters.values);
+          // print(activeFilters);
+          // print(trueCount);
+
+          return activeFilters == trueCount;
+        }).toList();
+      }
       await Future.delayed(const Duration(milliseconds: 500));
       callback(200, FETCH_SUCCESS);
       setLoading("stop");

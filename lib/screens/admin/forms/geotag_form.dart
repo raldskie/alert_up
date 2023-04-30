@@ -36,6 +36,7 @@ class GeoTagForm extends StatefulWidget {
 class _GeoTagFormState extends State<GeoTagForm> {
   PlatformFile? selectedImage;
   bool isUploadingImage = false;
+  SingleValueDropDownController purokCont = SingleValueDropDownController();
 
   Map payload = {
     "deviceId": "",
@@ -82,6 +83,16 @@ class _GeoTagFormState extends State<GeoTagForm> {
                 if (code == 200) {
                   payload = (diseasesProvider.geoTaggedIndividual?.value ?? {})
                       as Map;
+                  if (getPurok(payload['barangayKey'], payload['purokKey']) !=
+                      null) {
+                    purokCont.dropDownValue = DropDownValueModel(
+                        name: getPurok(
+                                payload['barangayKey'], payload['purokKey'])!
+                            .purokName,
+                        value: getPurok(
+                                payload['barangayKey'], payload['purokKey'])!
+                            .purokKey);
+                  }
                   return;
                 }
                 launchSnackbar(
@@ -309,16 +320,20 @@ class _GeoTagFormState extends State<GeoTagForm> {
                           setState(() {
                             payload = {
                               ...payload,
-                              ...getBarangay(val.value)!.toJson()
+                              ...getBarangay(val.value)!.toJson(),
+                              "purokKey": null,
+                              "purokName": null
                             };
+                            purokCont.clearDropDown();
                           });
                         }),
                     const SizedBox(height: 20),
                     DropDownTextField(
+                        controller: purokCont,
                         isEnabled: payload['barangayKey'] != null,
-                        initialValue: getPurok(
-                                payload['barangayKey'], payload['purokKey'])
-                            ?.purokName,
+                        // initialValue: getPurok(
+                        //         payload['barangayKey'], payload['purokKey'])
+                        //     ?.purokName,
                         clearOption: true,
                         clearIconProperty: IconProperty(color: ACCENT_COLOR),
                         dropDownItemCount: 6,
