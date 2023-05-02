@@ -96,7 +96,7 @@ class DateFilterB extends StatelessWidget {
                       getYear(appProvider.YEAR_SELECTED);
                     }
                   },
-                  items: const ["Weekly", "Monthly", "Quarterly", "Yearly"]
+                  items: const ["Monthly", "Quarterly", "Yearly"]
                       .map((e) => DropdownMenuItem<String>(
                             value: e,
                             child: Text(

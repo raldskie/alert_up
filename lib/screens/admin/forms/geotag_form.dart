@@ -277,7 +277,7 @@ class _GeoTagFormState extends State<GeoTagForm> {
                         },
                         onChanged: (val) =>
                             setState(() => payload['name'] = val),
-                        decoration: textFieldStyle(label: "Age")),
+                        decoration: textFieldStyle(label: "Name")),
                     const SizedBox(height: 20),
                     TextFormField(
                         initialValue: (payload['age'] ?? "").toString(),

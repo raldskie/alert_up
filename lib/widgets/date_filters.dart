@@ -77,12 +77,6 @@ class DateFilter extends StatelessWidget {
                   dropdownStyleData: DropdownStyleData(width: width * .5),
                   onChanged: (String? e) {
                     appProvider.setDateFilterType(e!);
-                    if (e == "Weekly") {
-                      getWeek(
-                          appProvider.WEEK_SELECTED,
-                          appProvider.MONTH_SELECTED,
-                          appProvider.YEAR_SELECTED);
-                    }
                     if (e == "Monthly") {
                       getMonth(appProvider.MONTH_SELECTED,
                           appProvider.YEAR_SELECTED);
@@ -95,7 +89,7 @@ class DateFilter extends StatelessWidget {
                       getYear(appProvider.YEAR_SELECTED);
                     }
                   },
-                  items: const ["Weekly", "Monthly", "Quarterly", "Yearly"]
+                  items: const ["Monthly", "Quarterly", "Yearly"]
                       .map((e) => DropdownMenuItem<String>(
                             value: e,
                             child: Text(
@@ -106,7 +100,7 @@ class DateFilter extends StatelessWidget {
                       .toList()),
             ),
             Expanded(child: Container()),
-            if (["Monthly", "Weekly"].contains(appProvider.DATE_FILTER_TYPE))
+            if (["Monthly"].contains(appProvider.DATE_FILTER_TYPE))
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 7),
                 child: PopupMenuButton<List>(
@@ -147,42 +141,6 @@ class DateFilter extends StatelessWidget {
                   onSelected: (e) {
                     getMonth(e, appProvider.YEAR_SELECTED);
                     appProvider.setMonth(e);
-                  },
-                ),
-              ),
-            if (["Weekly"].contains(appProvider.DATE_FILTER_TYPE))
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 7),
-                child: PopupMenuButton<List>(
-                  child: IconText(
-                    label: appProvider.WEEK_SELECTED[1],
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    icon: Icons.arrow_drop_down_rounded,
-                  ),
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                        value: [1, "Wk 1"],
-                        child: Text(
-                          "Wk 1",
-                          style: TextStyle(fontSize: 14),
-                        )),
-                    const PopupMenuItem(
-                        value: [2, "Wk 2"], child: Text("Wk 2")),
-                    const PopupMenuItem(
-                        value: [3, "Wk 3"],
-                        child: Text("Wk 3", style: TextStyle(fontSize: 14))),
-                    const PopupMenuItem(
-                        value: [4, "Wk 4"], child: Text("Wk 4")),
-                    const PopupMenuItem(
-                        value: [5, "Wk 5"], child: Text("Wk 5")),
-                  ],
-                  offset: const Offset(0, 30),
-                  elevation: 2,
-                  onSelected: (e) {
-                    getWeek(e, appProvider.MONTH_SELECTED,
-                        appProvider.YEAR_SELECTED);
-                    appProvider.setWeek(e);
                   },
                 ),
               ),
