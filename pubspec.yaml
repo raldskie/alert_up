@@ -63,6 +63,7 @@ dependencies:
   dropdown_button2: ^2.0.0
   photo_view: ^0.14.0
   zoom_widget: ^2.0.1
+  flutter_textfield_autocomplete: ^1.0.2
 
 dev_dependencies:
   flutter_test:

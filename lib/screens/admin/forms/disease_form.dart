@@ -1,12 +1,14 @@
 import 'dart:math';
 
 import 'package:alert_up_project/provider/diseases_provider.dart';
+import 'package:alert_up_project/utilities/disease_list.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/custom_app_bar.dart';
 import 'package:alert_up_project/widgets/form/form_theme.dart';
 import 'package:alert_up_project/widgets/simple_dialog.dart';
 import 'package:alert_up_project/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_textfield_autocomplete/flutter_textfield_autocomplete.dart';
 import 'package:provider/provider.dart';
 
 class DiseaseForm extends StatefulWidget {
@@ -19,6 +21,8 @@ class DiseaseForm extends StatefulWidget {
 }
 
 class _DiseaseFormState extends State<DiseaseForm> {
+  GlobalKey<TextFieldAutoCompleteState<String>> key = new GlobalKey();
+  TextEditingController nameCont = TextEditingController();
   Map payload = {
     "alert_message": "",
     "disease_description": "",
@@ -36,6 +40,9 @@ class _DiseaseFormState extends State<DiseaseForm> {
             callback: (code, message) {
               if (code == 200) {
                 payload = (diseasesProvider.disease?.value ?? {}) as Map;
+                if (payload['disease_name'] != null) {
+                  nameCont.text = payload['disease_name'];
+                }
                 return;
               }
               // launchSnackbar(
@@ -100,16 +107,20 @@ class _DiseaseFormState extends State<DiseaseForm> {
               child: Form(
                   child: Column(children: [
                 const SizedBox(height: 50),
-                TextFormField(
-                    initialValue: payload['disease_name'],
-                    validator: (val) {
-                      if (val!.isEmpty) {
-                        return "Field required";
-                      }
-                    },
-                    onChanged: (val) =>
-                        setState(() => payload['disease_name'] = val),
-                    decoration: textFieldStyle(label: "Disease Name")),
+                SimpleTextFieldAutoComplete(
+                  controller: nameCont,
+                  suggestions: diseases,
+                  textChanged: (val) {
+                    payload['disease_name'] = val;
+                  },
+                  clearOnSubmit: false,
+                  decoration: textFieldStyle(label: "Disease Name"),
+                  textSubmitted: (val) {
+                    nameCont.text = val;
+                    payload['disease_name'] = val;
+                  },
+                  key: key,
+                ),
                 const SizedBox(height: 20),
                 TextFormField(
                     initialValue: payload['disease_description'],

@@ -27,6 +27,8 @@ class _UnifiedRankingState extends State<UnifiedRanking> {
   Map query = {};
   Map purokRankingFilter = {};
 
+  double zoomLevel = (.7 / 2.5) * 100;
+
   getDiseases() {
     Provider.of<DiseasesProvider>(context, listen: false).getDiseaseList(
         callback: (code, message) {
@@ -233,125 +235,151 @@ class _UnifiedRankingState extends State<UnifiedRanking> {
               const Center(child: CircularProgressIndicator())
             else
               Expanded(
-                child: Zoom(
-                  centerOnScale: true,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
+                child: Stack(children: [
+                  Zoom(
+                    initScale: .7,
+                    onScaleUpdate: (p0, p1) {
+                      setState(() {
+                        zoomLevel =
+                            (double.parse(p1.toStringAsFixed(1)) / 2.5) * 100;
+                      });
+                    },
+                    centerOnScale: true,
                     child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          DataTable(
-                              dataRowHeight: 150,
-                              border:
-                                  TableBorder.all(width: 1, color: Colors.grey),
-                              columns: const [
-                                DataColumn(
-                                  label: Text('PUROK NUMBER'),
-                                ),
-                                DataColumn(
-                                  label: Text('TOTAL # OF CASES'),
-                                ),
-                                DataColumn(
-                                  label: Text('# OF CASES PER DISEASE'),
-                                ),
-                              ],
-                              rows: [
-                                ...reportsProvider.purokReport.map((purok) {
-                                  return DataRow(cells: [
-                                    DataCell(Text(purok['purokName'] ?? "")),
-                                    DataCell(Text("${purok['totalDisease']}")),
-                                    DataCell(Column(
-                                        children: (purok["diseases"] as List)
-                                            .mapIndexed((i, e) {
-                                      if (i > 2) return Container();
+                      scrollDirection: Axis.vertical,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DataTable(
+                                dataRowHeight: 150,
+                                border: TableBorder.all(
+                                    width: 1, color: Colors.grey),
+                                columns: const [
+                                  DataColumn(
+                                    label: Text('PUROK NUMBER'),
+                                  ),
+                                  DataColumn(
+                                    label: Text('TOTAL # OF CASES'),
+                                  ),
+                                  DataColumn(
+                                    label: Text('# OF CASES PER DISEASE'),
+                                  ),
+                                ],
+                                rows: [
+                                  ...reportsProvider.purokReport.map((purok) {
+                                    return DataRow(cells: [
+                                      DataCell(Text(purok['purokName'] ?? "")),
+                                      DataCell(
+                                          Text("${purok['totalDisease']}")),
+                                      DataCell(Column(
+                                          children: (purok["diseases"] as List)
+                                              .mapIndexed((i, e) {
+                                        if (i > 2) return Container();
 
-                                      return Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              IconText(
-                                                  backgroundColor: Colors.red,
-                                                  padding:
-                                                      const EdgeInsets.all(5),
-                                                  color: Colors.white,
-                                                  label: "${e['diseaseName']}"),
-                                              IconText(
-                                                  backgroundColor: Colors.red,
-                                                  padding:
-                                                      const EdgeInsets.all(5),
-                                                  color: Colors.white,
-                                                  label:
-                                                      "${e['diseaseCount']}"),
-                                            ]),
-                                      );
-                                    }).toList())),
-                                  ]);
-                                })
-                              ]),
-                          const SizedBox(width: 15),
-                          DataTable(
-                              dataRowHeight: 150,
-                              border:
-                                  TableBorder.all(width: 1, color: Colors.grey),
-                              columns: const [
-                                DataColumn(
-                                  label: Text('DISEASE NAME'),
-                                ),
-                                DataColumn(
-                                  label: Text('TOTAL # OF CASES'),
-                                ),
-                                DataColumn(
-                                  label: Text('# OF CASES PER PUROK'),
-                                ),
-                              ],
-                              rows: [
-                                ...reportsProvider.diseaseReport.map((disease) {
-                                  return DataRow(cells: [
-                                    DataCell(
-                                        Text(disease['diseaseName'] ?? "")),
-                                    DataCell(
-                                        Text("${disease['totalDisease']}")),
-                                    DataCell(Column(
-                                        children:
-                                            ((disease["puroks"] ?? []) as List)
-                                                .mapIndexed((i, e) {
-                                      if (i > 2) return Container();
+                                        return Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                IconText(
+                                                    backgroundColor: Colors.red,
+                                                    padding:
+                                                        const EdgeInsets.all(5),
+                                                    color: Colors.white,
+                                                    label:
+                                                        "${e['diseaseName']}"),
+                                                IconText(
+                                                    backgroundColor: Colors.red,
+                                                    padding:
+                                                        const EdgeInsets.all(5),
+                                                    color: Colors.white,
+                                                    label:
+                                                        "${e['diseaseCount']}"),
+                                              ]),
+                                        );
+                                      }).toList())),
+                                    ]);
+                                  })
+                                ]),
+                            const SizedBox(width: 15),
+                            DataTable(
+                                dataRowHeight: 150,
+                                border: TableBorder.all(
+                                    width: 1, color: Colors.grey),
+                                columns: const [
+                                  DataColumn(
+                                    label: Text('DISEASE NAME'),
+                                  ),
+                                  DataColumn(
+                                    label: Text('TOTAL # OF CASES'),
+                                  ),
+                                  DataColumn(
+                                    label: Text('# OF CASES PER PUROK'),
+                                  ),
+                                ],
+                                rows: [
+                                  ...reportsProvider.diseaseReport
+                                      .map((disease) {
+                                    return DataRow(cells: [
+                                      DataCell(
+                                          Text(disease['diseaseName'] ?? "")),
+                                      DataCell(
+                                          Text("${disease['totalDisease']}")),
+                                      DataCell(Column(
+                                          children: ((disease["puroks"] ?? [])
+                                                  as List)
+                                              .mapIndexed((i, e) {
+                                        if (i > 2) return Container();
 
-                                      return Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              IconText(
-                                                  backgroundColor: Colors.red,
-                                                  padding:
-                                                      const EdgeInsets.all(5),
-                                                  color: Colors.white,
-                                                  label: "${e['purokName']}"),
-                                              IconText(
-                                                  backgroundColor: Colors.red,
-                                                  padding:
-                                                      const EdgeInsets.all(5),
-                                                  color: Colors.white,
-                                                  label:
-                                                      "${e['diseaseCount']}"),
-                                            ]),
-                                      );
-                                    }).toList())),
-                                  ]);
-                                })
-                              ]),
-                        ],
+                                        return Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                IconText(
+                                                    backgroundColor: Colors.red,
+                                                    padding:
+                                                        const EdgeInsets.all(5),
+                                                    color: Colors.white,
+                                                    label: "${e['purokName']}"),
+                                                IconText(
+                                                    backgroundColor: Colors.red,
+                                                    padding:
+                                                        const EdgeInsets.all(5),
+                                                    color: Colors.white,
+                                                    label:
+                                                        "${e['diseaseCount']}"),
+                                              ]),
+                                        );
+                                      }).toList())),
+                                    ]);
+                                  })
+                                ]),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  Positioned(
+                    left: 20,
+                    bottom: 30,
+                    child: IconText(
+                      label: "${zoomLevel.toInt()}%",
+                      padding: const EdgeInsets.all(5),
+                      borderRadius: 100,
+                      size: 10,
+                      color: Colors.white,
+                      backgroundColor: Colors.black54,
+                    ),
+                  )
+                ]),
               ),
           ],
         ));

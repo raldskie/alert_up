@@ -10,6 +10,7 @@ import 'package:alert_up_project/widgets/barangay_filter.dart';
 import 'package:alert_up_project/widgets/button.dart';
 import 'package:alert_up_project/widgets/date_filters.dart';
 import 'package:alert_up_project/widgets/form/form_theme.dart';
+import 'package:alert_up_project/widgets/icon_text.dart';
 import 'package:alert_up_project/widgets/simple_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +28,8 @@ class _ReportGeotaggedByDiseaseState extends State<ReportGeotaggedByDisease> {
   Map reportDescription = {};
   final _debouncer = Debouncer(milliseconds: 1000);
   Map query = {"barangayKey": null};
+
+  double zoomLevel = (.7 / 2.5) * 100;
 
   getGeotagged() {
     Provider.of<ReportsProvider>(context, listen: false)
@@ -266,51 +269,74 @@ class _ReportGeotaggedByDiseaseState extends State<ReportGeotaggedByDisease> {
                     strokeWidth: 1,
                     color: ACCENT_COLOR,
                   ))
-                : Zoom(
-                    child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: DataTable(columns: [
-                              DataColumn(
-                                label: Text('Disease Name'),
-                              ),
-                              DataColumn(
-                                label: Text('Purok'),
-                              ),
-                              DataColumn(
-                                label: Text('Brngy'),
-                              ),
-                              DataColumn(
-                                label: Text('No. of active cases'),
-                              ),
-                              DataColumn(
-                                label: Text('No. of inactive cases'),
-                              ),
-                              DataColumn(
-                                label: Text('Total of cases'),
-                              ),
-                            ], rows: [
-                              ...reportsProvider.geotagByDisease.map((disease) {
-                                return DataRow(cells: [
-                                  DataCell(Text(disease['diseaseName'] ?? "")),
-                                  DataCell(Text(
-                                      ((disease['puroks'] ?? []) as List)
-                                          .map((e) => e['purokName'])
-                                          .join(", "))),
-                                  DataCell(Text((disease['barangays'] ?? [])
-                                      .map((e) => e['barangayName'])
-                                      .join(", "))),
-                                  DataCell(
-                                      Text("${disease['activeCases'] ?? ""}")),
-                                  DataCell(Text(
-                                      "${disease['inActiveCases'] ?? ""}")),
-                                  DataCell(
-                                      Text("${disease['totalCases'] ?? ""}")),
-                                ]);
-                              })
-                            ]))),
-                  ),
+                : Stack(children: [
+                    Zoom(
+                      initScale: 1,
+                      onScaleUpdate: (p0, p1) {
+                        setState(() {
+                          zoomLevel =
+                              (double.parse(p1.toStringAsFixed(1)) / 2.5) * 100;
+                        });
+                      },
+                      child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: DataTable(columns: [
+                                DataColumn(
+                                  label: Text('Disease Name'),
+                                ),
+                                DataColumn(
+                                  label: Text('Purok'),
+                                ),
+                                DataColumn(
+                                  label: Text('Brngy'),
+                                ),
+                                DataColumn(
+                                  label: Text('No. of active cases'),
+                                ),
+                                DataColumn(
+                                  label: Text('No. of inactive cases'),
+                                ),
+                                DataColumn(
+                                  label: Text('Total of cases'),
+                                ),
+                              ], rows: [
+                                ...reportsProvider.geotagByDisease
+                                    .map((disease) {
+                                  return DataRow(cells: [
+                                    DataCell(
+                                        Text(disease['diseaseName'] ?? "")),
+                                    DataCell(Text(
+                                        ((disease['puroks'] ?? []) as List)
+                                            .map((e) => e['purokName'])
+                                            .join(", "))),
+                                    DataCell(Text((disease['barangays'] ?? [])
+                                        .map((e) => e['barangayName'])
+                                        .join(", "))),
+                                    DataCell(Text(
+                                        "${disease['activeCases'] ?? ""}")),
+                                    DataCell(Text(
+                                        "${disease['inActiveCases'] ?? ""}")),
+                                    DataCell(
+                                        Text("${disease['totalCases'] ?? ""}")),
+                                  ]);
+                                })
+                              ]))),
+                    ),
+                    Positioned(
+                      left: 20,
+                      bottom: 30,
+                      child: IconText(
+                        label: "${zoomLevel.toInt()}%",
+                        padding: const EdgeInsets.all(5),
+                        borderRadius: 100,
+                        size: 10,
+                        color: Colors.white,
+                        backgroundColor: Colors.black54,
+                      ),
+                    )
+                  ]),
           ),
         ],
       ),
