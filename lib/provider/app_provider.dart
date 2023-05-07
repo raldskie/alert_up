@@ -84,4 +84,6 @@ class AppProvider extends ChangeNotifier {
     _endDate = endDate;
     notifyListeners();
   }
+
+
 }

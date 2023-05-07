@@ -113,14 +113,34 @@ class DiseasesProvider extends ChangeNotifier {
     }
   }
 
-  getDiseaseList({required Function callback}) async {
+  getDiseaseList({Map? filters, required Function callback}) async {
     setLoading("disease_list");
     Query diseaseRef = FirebaseDatabase.instance
         .ref("alerts_zone/list_of_disease")
         .orderByChild("disease_name");
 
     diseaseRef.onValue.listen((event) async {
-      _diseases = event.snapshot.children.toList();
+      _diseases = event.snapshot.children.where((disease) {
+        Map value = disease.value as Map;
+
+        if ((filters?.values ?? []).isEmpty) {
+          return true;
+        }
+
+        int activeFilters = filters!.values
+            .fold(0, (value, element) => element != null ? value + 1 : value);
+        int trueCount = 0;
+
+        if (filters['searchKey'] != null &&
+            value['disease_name']
+                .toString()
+                .toLowerCase()
+                .contains(filters['searchKey'].toString().toLowerCase())) {
+          trueCount += 1;
+        }
+
+        return activeFilters == trueCount;
+      }).toList();
       await Future.delayed(const Duration(milliseconds: 500));
       setLoading("stop");
       callback(200, FETCH_SUCCESS);
@@ -142,7 +162,6 @@ class DiseasesProvider extends ChangeNotifier {
 
           int activeFilters = filters.values
               .fold(0, (value, element) => element != null ? value + 1 : value);
-
           int trueCount = 0;
 
           if (filters['barangayKey'] != null &&

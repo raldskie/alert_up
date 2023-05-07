@@ -6,6 +6,7 @@ import 'package:alert_up_project/screens/admin/login_form.dart';
 import 'package:alert_up_project/screens/admin/reports/report_geotagged.dart';
 import 'package:alert_up_project/screens/admin/reports/geofence_disease.dart';
 import 'package:alert_up_project/screens/admin/reports/geofence_purok.dart';
+import 'package:alert_up_project/screens/admin/reports/unified_reports.dart';
 import 'package:alert_up_project/screens/admin/scan_qr.dart';
 import 'package:alert_up_project/screens/admin/select_summary.dart';
 import 'package:alert_up_project/screens/admin/report_classified_zones.dart';
@@ -55,6 +56,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => GeofencePurokRanking());
       case '/geofence/disease-ranking':
         return MaterialPageRoute(builder: (_) => GeofenceDiseaseRanking());
+      case '/reports/unified':
+        return MaterialPageRoute(builder: (_) => UnifiedRanking());
       case '/scan/qr':
         return MaterialPageRoute(
             builder: (_) => QRScanner(

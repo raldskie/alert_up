@@ -12,10 +12,11 @@ import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'asset_to_file.dart';
 import 'get_date_filter_desc.dart';
 
-Future<bool?> generateGeotagPDF(BuildContext context,
-    {required Map reportDescription, required List geotagged}) async {
+Future<bool?> geotagByDiseaseGeneratePDF(BuildContext context,
+    {required Map reportDescription, required List disease}) async {
   //Create a new PDF document
   PdfDocument document = PdfDocument();
+
   final PdfPage page = document.pages.add();
 
   // HEADER START HERE -------------------------------------
@@ -32,7 +33,6 @@ Future<bool?> generateGeotagPDF(BuildContext context,
 
   final PdfTextElement textElement1 = PdfTextElement(
       text: "City Health Office",
-      // "${reportDescription['title']}\n\n${reportDescription['description']}\n\n\nBarangay: ${reportDescription['barangayName']} ${reportDescription['barangayName']} | Filtered by: ${reportDescription['dateFilterType']} | ${reportDescription['dates']}}",
       font: PdfStandardFont(PdfFontFamily.helvetica, 12),
       format: PdfStringFormat(
         alignment: PdfTextAlignment.center,
@@ -65,11 +65,11 @@ Future<bool?> generateGeotagPDF(BuildContext context,
     bounds: Rect.fromLTWH(0, 128, page.getClientSize().width, 26),
   );
 
-  if (reportDescription['dateTagged'] != null) {
+  if (reportDescription["createdAt"] != null) {
     final PdfTextElement textElement4 = PdfTextElement(
         text: dateFilterDescription(
             filterType: reportDescription["dateFilterType"],
-            dates: reportDescription["dateTagged"]),
+            dates: reportDescription["createdAt"]),
         font: PdfStandardFont(PdfFontFamily.helvetica, 12),
         format: PdfStringFormat(
           alignment: PdfTextAlignment.center,
@@ -92,39 +92,30 @@ Future<bool?> generateGeotagPDF(BuildContext context,
   // HEADER END HERE -------------------------------------
 
   PdfGrid grid = PdfGrid();
-  grid.columns.add(count: 9);
+  grid.columns.add(count: 6);
   grid.headers.add(1);
   document.pageSettings.orientation = PdfPageOrientation.landscape;
 
   PdfGridRow header = grid.headers[0];
-  header.cells[0].value = 'Name';
-  header.cells[1].value = 'Barangay';
-  header.cells[2].value = 'Age';
-  header.cells[3].value = 'Gender';
-  header.cells[4].value = 'Disease';
-  header.cells[5].value = 'Contagious/Infectious';
-  header.cells[6].value = 'Current Weather';
-  header.cells[7].value = 'Date Tagged';
-  header.cells[8].value = 'Date Untagged';
+  header.cells[0].value = 'Disease Name';
+  header.cells[1].value = 'Purok';
+  header.cells[2].value = 'Barangay';
+  header.cells[3].value = 'No. of active cases';
+  header.cells[4].value = 'No. of inactive cases';
+  header.cells[5].value = 'Total cases';
 
-  List.generate(geotagged.length, (index) {
+  List.generate(disease.length, (index) {
     PdfGridRow row = grid.rows.add();
-    row.cells[0].value = geotagged[index]['name'] ?? "";
-    row.cells[1].value = geotagged[index]['barangay'] ?? "";
-    row.cells[2].value = geotagged[index]['age'] ?? "";
-    row.cells[3].value = geotagged[index]['gender'] ?? "";
-    row.cells[4].value = geotagged[index]['diseaseName'] ?? "";
-    row.cells[5].value =
-        (geotagged[index]['isContagious'] ?? false) ? "Yes" : "No";
-    row.cells[6].value = geotagged[index]['weatherName'] ?? "";
-    row.cells[7].value = geotagged[index]['created_At'] != null
-        ? DateFormat()
-            .format(DateTime.parse(geotagged[index]['created_At']).toLocal())
-        : "Not recorded";
-    row.cells[8].value = geotagged[index]['untagDate'] != null
-        ? DateFormat()
-            .format(DateTime.parse(geotagged[index]['untagDate']).toLocal())
-        : "Not recorded";
+    row.cells[0].value = disease[index]['diseaseName'] ?? "";
+    row.cells[1].value = ((disease[index]['puroks'] ?? []) as List)
+        .map((e) => e['purokName'])
+        .join(", ");
+    row.cells[2].value = (disease[index]['barangays'] ?? [])
+        .map((e) => e['barangayName'])
+        .join(", ");
+    row.cells[3].value = "${disease[index]['activeCases'] ?? ""}";
+    row.cells[4].value = "${disease[index]['inActiveCases'] ?? ""}";
+    row.cells[5].value = "${disease[index]['totalCases'] ?? ""}";
   });
 
   grid.style = PdfGridStyle(

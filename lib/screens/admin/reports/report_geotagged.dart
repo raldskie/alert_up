@@ -18,6 +18,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:zoom_widget/zoom_widget.dart';
 
 class GeotaggedReport extends StatefulWidget {
   GeotaggedReport({Key? key}) : super(key: key);
@@ -106,6 +107,12 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                         await generateGeotagPDF(context,
                             reportDescription: {
                               ...reportDescription,
+                              "dateFilterType": query['dateTagged'] != null
+                                  ? appProvider.DATE_FILTER_TYPE
+                                  : "None",
+                              "dateTagged": query['dateTagged'] != null
+                                  ? "${query['dateTagged'][0]} ${query['dateTagged'][1]}"
+                                  : null,
                               "barangayName":
                                   getBarangay(query['barangayKey'])?.barangay ??
                                       "None",
@@ -127,17 +134,15 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
     }
 
     return Scaffold(
-        appBar: customAppBar(context, title: "Geotag Report", actions: [
-          Button(
-              label: "Generate PDF",
-              icon: Icons.picture_as_pdf_rounded,
-              backgroundColor: Colors.transparent,
-              borderColor: Colors.transparent,
-              textColor: ACCENT_COLOR,
-              onPress: () async {
-                addReportInfo();
-              })
-        ]),
+        // appBar: customAppBar(context, title: "Geotag Report", actions: [
+
+        // ]),
+        floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.picture_as_pdf_rounded),
+            backgroundColor: ACCENT_COLOR,
+            onPressed: () {
+              addReportInfo();
+            }),
         backgroundColor: Colors.white,
         body: Column(
           children: [
@@ -154,207 +159,165 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                       getGeotagged();
                     })),
             const Divider(),
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  children: [
-                    Accordion(
-                        titleIcon: Icons.filter_alt,
-                        title: "Filters",
-                        content: Container(
-                          color: ACCENT_COLOR.withOpacity(.05),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 15, vertical: 25),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Search Name",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 5),
-                                SearchBar(
-                                    searchKey: query['name'] ?? "",
-                                    backgroundColor:
-                                        ACCENT_COLOR.withOpacity(.1),
-                                    onChanged: (val) {
-                                      query['name'] = val;
-                                      _debouncer.run(() {
-                                        getGeotagged();
-                                      });
-                                    }),
-                                const SizedBox(height: 20),
-                                Text(
-                                    "Age Range ${query['age'] != null ? "| ${query['age'].start.toInt()} to ${query['age'].end.toInt()}" : ""}",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                Row(children: [
-                                  Text("0"),
-                                  Expanded(
-                                    child: RangeSlider(
-                                      activeColor: ACCENT_COLOR,
-                                      values: query['age'] != null
-                                          ? query['age']
-                                          : RangeValues(0, 100),
-                                      max: 100,
-                                      divisions: 100,
-                                      onChanged: (RangeValues values) {
-                                        setState(() {
-                                          query['age'] = values;
-                                        });
-                                        _debouncer.run(() {
-                                          getGeotagged();
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                  Text("100"),
-                                ]),
-                                const SizedBox(height: 20),
-                                Text("Current weather when recorded",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                WeatherFilter(
-                                    weatherKey: query['weatherKey'],
-                                    onChange: (value) {
-                                      query['weatherKey'] = value;
-                                      getGeotagged();
-                                    }),
-                                const SizedBox(height: 20),
-                                Text("Date Tagged",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                Opacity(
-                                  opacity: query['dateTagged'] != null ? 1 : .5,
-                                  child: DateFilter(
-                                      backgroundColor: Colors.transparent,
-                                      padding: 0,
-                                      onApplyFilter: (DateTime startDate,
-                                          DateTime endDate) {
-                                        setState(() {
-                                          query['dateTagged'] = [
-                                            startDate,
-                                            endDate
-                                          ];
-                                        });
-                                        _debouncer.run(() {
-                                          getGeotagged();
-                                        });
-                                      },
-                                      startDate: "",
-                                      endDate: ""),
-                                ),
-                                const SizedBox(height: 20),
-                                Text("Date Untagged",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                Opacity(
-                                  opacity: query['dateTagged'] != null ? 1 : .5,
-                                  child: DateFilterB(
-                                      backgroundColor: Colors.transparent,
-                                      padding: 0,
-                                      onApplyFilter: (DateTime startDate,
-                                          DateTime endDate) {
-                                        setState(() {
-                                          query['dateUntagged'] = [
-                                            startDate,
-                                            endDate
-                                          ];
-                                        });
-                                        _debouncer.run(() {
-                                          getGeotagged();
-                                        });
-                                      },
-                                      startDate: "",
-                                      endDate: ""),
-                                ),
-                              ]),
-                        )),
-                    if (diseasesProvider.loading == "geotagged_list")
-                      Padding(
-                        padding: const EdgeInsets.all(50),
-                        child: const Center(
-                            child: CircularProgressIndicator(
-                          strokeWidth: 1,
-                          color: ACCENT_COLOR,
-                        )),
-                      )
-                    else
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(dataRowHeight: 100, columns: [
-                          DataColumn(
-                            label: Text('Name'),
-                          ),
-                          DataColumn(
-                            label: Text('Barangay'),
-                          ),
-                          DataColumn(
-                            label: Text('Age'),
-                          ),
-                          DataColumn(
-                            label: DropdownButton2<String>(
-                                value: query['gender'],
-                                underline: Container(
-                                  color: Colors.grey[100],
-                                  height: 0,
-                                ),
-                                iconStyleData: const IconStyleData(
-                                    icon: Icon(
-                                  Icons.filter_list_rounded,
-                                  size: 14,
-                                )),
-                                dropdownStyleData: DropdownStyleData(
-                                    padding: EdgeInsets.zero, width: 100),
-                                onChanged: (String? e) {
-                                  setState(() {
-                                    query = {...query, "gender": e};
-                                  });
+            Accordion(
+                titleIcon: Icons.filter_alt,
+                title: "Filters",
+                content: Container(
+                  color: ACCENT_COLOR.withOpacity(.05),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 25),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Search Name",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 5),
+                        SearchBar(
+                            searchKey: query['name'] ?? "",
+                            backgroundColor: ACCENT_COLOR.withOpacity(.1),
+                            onChanged: (val) {
+                              query['name'] = val;
+                              _debouncer.run(() {
+                                getGeotagged();
+                              });
+                            }),
+                        const SizedBox(height: 20),
+                        Text(
+                            "Age Range ${query['age'] != null ? "| ${query['age'].start.toInt()} to ${query['age'].end.toInt()}" : ""}",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        Row(children: [
+                          Text("0"),
+                          Expanded(
+                            child: RangeSlider(
+                              activeColor: ACCENT_COLOR,
+                              values: query['age'] != null
+                                  ? query['age']
+                                  : RangeValues(0, 100),
+                              max: 100,
+                              divisions: 100,
+                              onChanged: (RangeValues values) {
+                                setState(() {
+                                  query['age'] = values;
+                                });
+                                _debouncer.run(() {
                                   getGeotagged();
-                                },
-                                hint: Text(
-                                  "Gender",
-                                  style: TextStyle(color: Colors.black),
-                                ),
-                                items: const [
-                                  "Male",
-                                  "Female",
-                                ]
-                                    .map((e) => DropdownMenuItem<String>(
-                                          value: e,
-                                          child: Text(e),
-                                        ))
-                                    .toList()),
+                                });
+                              },
+                            ),
                           ),
-                          DataColumn(
-                            label: DropdownButton2<String>(
-                                value: null,
-                                underline: Container(
-                                  color: Colors.grey[100],
-                                  height: 0,
-                                ),
-                                iconStyleData: const IconStyleData(
-                                    icon: Icon(
-                                  Icons.filter_list_rounded,
-                                  size: 14,
-                                )),
-                                dropdownStyleData: DropdownStyleData(
-                                    padding: EdgeInsets.zero, width: 200),
-                                onChanged: (String? e) {},
-                                hint: Text(
-                                  "Disease",
-                                  style: TextStyle(color: Colors.black),
-                                ),
-                                items: (diseasesProvider.diseases).map((e) {
-                                  Object? value = e.value;
-                                  Map disease = value is Map ? value : {};
-                                  return DropdownMenuItem<String>(
-                                    value: e.key,
-                                    child: Text(disease['disease_name']),
-                                  );
-                                }).toList()),
-                          ),
-                          DataColumn(
+                          Text("100"),
+                        ]),
+                        const SizedBox(height: 20),
+                        Text("Current weather when recorded",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        WeatherFilter(
+                            weatherKey: query['weatherKey'],
+                            onChange: (value) {
+                              query['weatherKey'] = value;
+                              getGeotagged();
+                            }),
+                        const SizedBox(height: 20),
+                        Text("Date Tagged",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        Opacity(
+                          opacity: query['dateTagged'] != null ? 1 : .5,
+                          child: DateFilter(
+                              backgroundColor: Colors.transparent,
+                              padding: 0,
+                              onApplyFilter:
+                                  (DateTime startDate, DateTime endDate) {
+                                setState(() {
+                                  query['dateTagged'] = [startDate, endDate];
+                                });
+                                _debouncer.run(() {
+                                  getGeotagged();
+                                });
+                              },
+                              startDate: "",
+                              endDate: ""),
+                        ),
+                        const SizedBox(height: 20),
+                        Text("Date Untagged",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        Opacity(
+                          opacity: query['dateTagged'] != null ? 1 : .5,
+                          child: DateFilterB(
+                              backgroundColor: Colors.transparent,
+                              padding: 0,
+                              onApplyFilter:
+                                  (DateTime startDate, DateTime endDate) {
+                                setState(() {
+                                  query['dateUntagged'] = [startDate, endDate];
+                                });
+                                _debouncer.run(() {
+                                  getGeotagged();
+                                });
+                              },
+                              startDate: "",
+                              endDate: ""),
+                        ),
+                      ]),
+                )),
+            Expanded(
+              child: diseasesProvider.loading == "geotagged_list"
+                  ? Padding(
+                      padding: const EdgeInsets.all(50),
+                      child: const Center(
+                          child: CircularProgressIndicator(
+                        strokeWidth: 1,
+                        color: ACCENT_COLOR,
+                      )),
+                    )
+                  : Zoom(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(dataRowHeight: 100, columns: [
+                            DataColumn(
+                              label: Text('Name'),
+                            ),
+                            DataColumn(
+                              label: Text('Barangay'),
+                            ),
+                            DataColumn(
+                              label: Text('Age'),
+                            ),
+                            DataColumn(
+                              label: DropdownButton2<String>(
+                                  value: query['gender'],
+                                  underline: Container(
+                                    color: Colors.grey[100],
+                                    height: 0,
+                                  ),
+                                  iconStyleData: const IconStyleData(
+                                      icon: Icon(
+                                    Icons.filter_list_rounded,
+                                    size: 14,
+                                  )),
+                                  dropdownStyleData: DropdownStyleData(
+                                      padding: EdgeInsets.zero, width: 100),
+                                  onChanged: (String? e) {
+                                    setState(() {
+                                      query = {...query, "gender": e};
+                                    });
+                                    getGeotagged();
+                                  },
+                                  hint: Text(
+                                    "Gender",
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                  items: const [
+                                    "Male",
+                                    "Female",
+                                  ]
+                                      .map((e) => DropdownMenuItem<String>(
+                                            value: e,
+                                            child: Text(e),
+                                          ))
+                                      .toList()),
+                            ),
+                            DataColumn(
                               label: DropdownButton2<String>(
                                   value: null,
                                   underline: Container(
@@ -367,89 +330,118 @@ class _GeotaggedReportState extends State<GeotaggedReport> {
                                     size: 14,
                                   )),
                                   dropdownStyleData: DropdownStyleData(
-                                      padding: EdgeInsets.zero, width: 100),
+                                      padding: EdgeInsets.zero, width: 200),
                                   onChanged: (String? e) {},
                                   hint: Text(
-                                    'Contagious/Infectious',
+                                    "Disease",
                                     style: TextStyle(color: Colors.black),
                                   ),
-                                  items: const [
-                                    "Yes",
-                                    "No",
-                                  ]
-                                      .map((e) => DropdownMenuItem<String>(
-                                            value: e,
-                                            child: Text(e),
-                                          ))
-                                      .toList())),
-                          DataColumn(
-                            label: Text('Current Weather'),
-                          ),
-                          DataColumn(
-                            label: Text('Date Tagged'),
-                          ),
-                          DataColumn(
-                            label: Text('Date Untagged'),
-                          ),
-                        ], rows: [
-                          ...diseasesProvider.geotaggedIndividuals.map((value) {
-                            if (value.value is Map) {
-                              Map geotagged = value.value as Map;
+                                  items: (diseasesProvider.diseases).map((e) {
+                                    Object? value = e.value;
+                                    Map disease = value is Map ? value : {};
+                                    return DropdownMenuItem<String>(
+                                      value: e.key,
+                                      child: Text(disease['disease_name']),
+                                    );
+                                  }).toList()),
+                            ),
+                            DataColumn(
+                                label: DropdownButton2<String>(
+                                    value: null,
+                                    underline: Container(
+                                      color: Colors.grey[100],
+                                      height: 0,
+                                    ),
+                                    iconStyleData: const IconStyleData(
+                                        icon: Icon(
+                                      Icons.filter_list_rounded,
+                                      size: 14,
+                                    )),
+                                    dropdownStyleData: DropdownStyleData(
+                                        padding: EdgeInsets.zero, width: 100),
+                                    onChanged: (String? e) {},
+                                    hint: Text(
+                                      'Contagious/Infectious',
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                    items: const [
+                                      "Yes",
+                                      "No",
+                                    ]
+                                        .map((e) => DropdownMenuItem<String>(
+                                              value: e,
+                                              child: Text(e),
+                                            ))
+                                        .toList())),
+                            DataColumn(
+                              label: Text('Current Weather'),
+                            ),
+                            DataColumn(
+                              label: Text('Date Tagged'),
+                            ),
+                            DataColumn(
+                              label: Text('Date Untagged'),
+                            ),
+                          ], rows: [
+                            ...diseasesProvider.geotaggedIndividuals
+                                .map((value) {
+                              if (value.value is Map) {
+                                Map geotagged = value.value as Map;
 
+                                return DataRow(cells: [
+                                  DataCell(Text(geotagged['name'] ?? "")),
+                                  DataCell(Text(geotagged['barangay'] ?? "")),
+                                  DataCell(Text(geotagged['age'] ?? "")),
+                                  DataCell(SizedBox(
+                                      width: 200,
+                                      child: Text(geotagged['gender'] ?? ""))),
+                                  DataCell(SizedBox(
+                                      width: 200,
+                                      child: Text(
+                                          geotagged['diseaseName'] ?? ""))),
+                                  DataCell(SizedBox(
+                                      width: 200,
+                                      child: Text(
+                                          (geotagged['isContagious'] ?? false)
+                                              ? "Yes"
+                                              : "No"))),
+                                  DataCell(SizedBox(
+                                      width: 200,
+                                      child: Text(
+                                          geotagged['weatherName'] ?? ""))),
+                                  DataCell(SizedBox(
+                                      width: 200,
+                                      child: Text(geotagged['created_At'] !=
+                                              null
+                                          ? DateFormat().format(DateTime.parse(
+                                                  geotagged['created_At'])
+                                              .toLocal())
+                                          : "Not recorded"))),
+                                  DataCell(SizedBox(
+                                      width: 200,
+                                      child: Text(geotagged['untagDate'] != null
+                                          ? DateFormat().format(DateTime.parse(
+                                                  geotagged['untagDate'])
+                                              .toLocal())
+                                          : geotagged['status'] == "Untagged"
+                                              ? "Not recorded"
+                                              : "Still tagged"))),
+                                ]);
+                              }
                               return DataRow(cells: [
-                                DataCell(Text(geotagged['name'] ?? "")),
-                                DataCell(Text(geotagged['barangay'] ?? "")),
-                                DataCell(Text(geotagged['age'] ?? "")),
+                                DataCell(Text("No Data")),
+                                DataCell(Text("No Data")),
                                 DataCell(SizedBox(
-                                    width: 200,
-                                    child: Text(geotagged['gender'] ?? ""))),
+                                    width: 200, child: Text("No Data"))),
                                 DataCell(SizedBox(
-                                    width: 200,
-                                    child:
-                                        Text(geotagged['diseaseName'] ?? ""))),
-                                DataCell(SizedBox(
-                                    width: 200,
-                                    child: Text(
-                                        (geotagged['isContagious'] ?? false)
-                                            ? "Yes"
-                                            : "No"))),
-                                DataCell(SizedBox(
-                                    width: 200,
-                                    child:
-                                        Text(geotagged['weatherName'] ?? ""))),
-                                DataCell(SizedBox(
-                                    width: 200,
-                                    child: Text(geotagged['created_At'] != null
-                                        ? DateFormat().format(DateTime.parse(
-                                                geotagged['created_At'])
-                                            .toLocal())
-                                        : "Not recorded"))),
-                                DataCell(SizedBox(
-                                    width: 200,
-                                    child: Text(geotagged['untagDate'] != null
-                                        ? DateFormat().format(DateTime.parse(
-                                                geotagged['untagDate'])
-                                            .toLocal())
-                                        : geotagged['status'] == "Untagged"
-                                            ? "Not recorded"
-                                            : "Still tagged"))),
+                                    width: 200, child: Text("No Data"))),
+                                // DataCell(Button(label: "Show On Map")),
                               ]);
-                            }
-                            return DataRow(cells: [
-                              DataCell(Text("No Data")),
-                              DataCell(Text("No Data")),
-                              DataCell(
-                                  SizedBox(width: 200, child: Text("No Data"))),
-                              DataCell(
-                                  SizedBox(width: 200, child: Text("No Data"))),
-                              // DataCell(Button(label: "Show On Map")),
-                            ]);
-                          })
-                        ]),
+                            })
+                          ]),
+                        ),
                       ),
-                  ],
-                ),
-              ),
+                    ),
             ),
           ],
         ));
