@@ -5,12 +5,27 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class UserProvider extends ChangeNotifier {
+  String _loggedEmail = "";
+  String get loggedEmail => _loggedEmail;
+
+  String _loggedUserName = "";
+  String get loggedUserName => _loggedUserName;
+
+  String _loggedPassword = "";
+  String get loggedPassword => _loggedPassword;
+
   String _loading = "stop";
   String get loading => _loading;
 
   setLoading(String loading) async {
     _loading = loading;
     notifyListeners();
+  }
+
+  logOut() {
+    _loggedEmail = "";
+    _loggedUserName = "";
+    _loggedPassword = "";
   }
 
   userLogin({required Map payload, required Function callback}) async {
@@ -26,6 +41,10 @@ class UserProvider extends ChangeNotifier {
           setLoading("stop");
           return;
         }
+        _loggedEmail = (event.snapshot.value as Map)['email'];
+        _loggedUserName = (event.snapshot.value as Map)['username'];
+        // P.S. sorry but dinalian nani, lmao
+        _loggedPassword = (event.snapshot.value as Map)['password'];
         callback(200, FETCH_SUCCESS);
         setLoading("stop");
       } else {
@@ -33,6 +52,38 @@ class UserProvider extends ChangeNotifier {
         setLoading("stop");
       }
     });
+  }
+
+  setToResetUserName({required String email}) {
+    Query diseaseRef = FirebaseDatabase.instance.ref("users");
+    diseaseRef.onValue.listen((event) async {
+      event.snapshot.children.forEach((element) {
+        if (element.value is Map) {
+          Map val = element.value as Map;
+          if (val['email'].trim() == email.trim()) {
+            _loggedUserName = val['username'];
+          }
+        }
+      });
+    });
+  }
+
+  changePassword(
+      {required String newPassword, required Function callback}) async {
+    setLoading("change_password");
+
+    DatabaseReference userRef =
+        FirebaseDatabase.instance.ref("users/$loggedUserName");
+
+    try {
+      await userRef.update({"password": newPassword});
+      callback(200, FETCH_SUCCESS);
+      await Future.delayed(const Duration(milliseconds: 500));
+      setLoading("stop");
+    } catch (e) {
+      callback(500, FETCH_ERROR);
+      setLoading("stop");
+    }
   }
 
   hasEnteredClassifiedArea(

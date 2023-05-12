@@ -50,7 +50,7 @@ class IconText extends StatelessWidget {
                   width: size ?? 13,
                   child: CircularProgressIndicator(
                     color: color ?? ACCENT_COLOR,
-                    strokeWidth: 1,
+                    strokeWidth: 2,
                   ))
             else if (icon != null)
               Icon(

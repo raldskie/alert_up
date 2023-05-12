@@ -1,3 +1,4 @@
+import 'package:alert_up_project/screens/admin/change_password.dart';
 import 'package:alert_up_project/screens/admin/forms/classified_zone_form.dart';
 import 'package:alert_up_project/screens/admin/forms/disease_form.dart';
 import 'package:alert_up_project/screens/admin/forms/geotag_form.dart';
@@ -63,6 +64,9 @@ class RouteGenerator {
             builder: (_) => QRScanner(
                   purpose: args?['purpose'] ?? "",
                 ));
+      case '/password/change':
+        return MaterialPageRoute(
+            builder: (_) => ChangePassword());
       default:
         return _errorRoute();
     }

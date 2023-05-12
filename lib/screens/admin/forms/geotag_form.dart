@@ -380,6 +380,20 @@ class _GeoTagFormState extends State<GeoTagForm> {
                           });
                         }),
                     const SizedBox(height: 20),
+                    TextFormField(
+                        initialValue: (payload['contact'] ?? "").toString(),
+                        validator: (val) {
+                          if (val!.isEmpty) {
+                            return "Field required";
+                          }
+                        },
+                        keyboardType: TextInputType.number,
+                        onChanged: (val) =>
+                            setState(() => payload['contact'] = val),
+                        maxLength: 10,
+                        decoration: textFieldStyle(
+                            label: "Contact No.", prefix: "+63")),
+                    const SizedBox(height: 20),
                     IconText(
                       label: "Gender",
                       fontWeight: FontWeight.bold,

@@ -29,6 +29,7 @@ dialogWithAction(context,
     {required String title,
     String? description,
     bool? barrierDismissible,
+    Function? onDismiss,
     required List<Widget> actions}) {
   showDialog<String>(
     context: context,
@@ -46,7 +47,10 @@ dialogWithAction(context,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextButton(
-                onPressed: () => Navigator.pop(context, 'OK'),
+                onPressed: () {
+                  if (onDismiss != null) onDismiss();
+                  Navigator.pop(context, 'OK');
+                },
                 child: IconText(
                   icon: Icons.close,
                   label: "Dismiss",

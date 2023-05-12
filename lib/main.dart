@@ -84,3 +84,5 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+// https://blog.devgenius.io/send-emails-without-backend-in-flutter-48d0c506ab4c

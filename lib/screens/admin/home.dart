@@ -269,6 +269,13 @@ class _AdminHomeState extends State<AdminHome> {
               ),
             ),
             const SizedBox(height: 20),
+            Button(
+              icon: Icons.password_rounded,
+              label: "Change Password",
+              onPress: () {
+                Navigator.pushNamed(context, '/password/change');
+              },
+            )
           ]),
     );
   }
